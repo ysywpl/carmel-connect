@@ -1,0 +1,463 @@
+<title>Hongnong Yang Route</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:opsz,wght@6..72,500;6..72,600&family=Noto+Sans+SC:wght@400;500;700&family=Noto+Serif+SC:wght@600&display=swap">
+<style>
+/* Layout: schematic SVG map with a stop panel beside it; timeline and day strip sit under the map. */
+:root {
+  --bg: #eef1ed;
+  --surface: #f9faf7;
+  --ink: #1b2a2d;
+  --muted: #566669;
+  --line: #cfd8d3;
+  --sea: #d4e2e6;
+  --land: #f3f4ec;
+  --river: #7fa8b8;
+  --route: #1d6a66;
+  --pin: #24383c;
+  --accent: #b3261e;
+  --display: "Newsreader", "Noto Serif SC", Georgia, serif;
+  --serif-zh: "Noto Serif SC", "Songti SC", serif;
+  --body: "Noto Sans SC", "PingFang SC", "Microsoft YaHei", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #111a1c; --surface: #172326; --ink: #e4ece9; --muted: #98aaa8; --line: #2b3d40;
+    --sea: #14262b; --land: #1d2c2d; --river: #44798c; --route: #5cc4bb; --pin: #cfe0dc; --accent: #ee7468;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #111a1c; --surface: #172326; --ink: #e4ece9; --muted: #98aaa8; --line: #2b3d40;
+  --sea: #14262b; --land: #1d2c2d; --river: #44798c; --route: #5cc4bb; --pin: #cfe0dc; --accent: #ee7468;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.55;
+  padding-block: 20px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.wrap { max-width: 1240px; margin: 0 auto; display: flex; flex-direction: column; gap: 18px; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+header { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; justify-content: space-between; }
+.brand { display: flex; gap: 14px; align-items: center; min-width: 0; }
+.seal { flex: none; width: 46px; height: 46px; background: var(--accent); color: var(--bg); display: grid; place-items: center;
+  font-family: var(--serif-zh); font-size: 26px; border-radius: 3px; transform: rotate(-3deg); }
+h1 { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 4vw, 34px); line-height: 1.1; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.tools { display: flex; gap: 10px; flex-wrap: wrap; align-items: center; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 6px; overflow: hidden; background: var(--surface); }
+.seg button { border: 0; background: transparent; padding: 6px 14px; font-size: 13px; }
+.seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+.check { display: inline-flex; gap: 8px; align-items: center; font-size: 13px; border: 1px solid var(--line); background: var(--surface); padding: 6px 12px; border-radius: 6px; }
+
+.grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+.left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.mapframe { position: relative; background: var(--sea); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
+#map { display: block; width: 100%; aspect-ratio: 750 / 819; max-height: 78vh; user-select: none; }
+#map .hit { cursor: pointer; }
+.ctl { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 6px; }
+.ctl button { width: 34px; height: 34px; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; font-size: 18px; line-height: 1; }
+.ctl button.wide { width: auto; padding: 0 10px; font-size: 12px; }
+.caption { position: absolute; left: 10px; bottom: 8px; right: 60px; font-size: 11.5px; color: var(--muted); }
+
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 14px 16px; }
+.card h2 { font-family: var(--display); font-size: 18px; font-weight: 600; margin: 0 0 8px; }
+.era { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+.era strong { font-family: var(--display); font-size: 22px; font-weight: 600; }
+.era .yr { font-variant-numeric: tabular-nums; color: var(--muted); }
+input[type="range"] { width: 100%; accent-color: var(--route); margin: 10px 0 6px; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 3px 12px; font-size: 12.5px; }
+.chips button:hover { border-color: var(--route); }
+.fine { color: var(--muted); font-size: 12.5px; margin: 8px 0 0; }
+
+.strip { display: flex; gap: 3px; }
+.strip button { min-width: 0; border: 1px solid var(--line); background: var(--bg); border-radius: 4px; padding: 6px 2px; text-align: center; line-height: 1.2; }
+.strip button b { display: block; font-family: var(--display); font-size: 16px; }
+.strip button span { font-size: 11px; color: var(--muted); font-variant-numeric: tabular-nums; }
+.strip button[aria-current="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.strip button[aria-current="true"] span { color: var(--bg); }
+.strip button[disabled] { opacity: .35; cursor: default; }
+
+.panel { position: sticky; top: 12px; display: flex; flex-direction: column; gap: 14px; }
+.phead { display: flex; gap: 14px; align-items: flex-start; }
+.badge { flex: none; width: 40px; height: 40px; border-radius: 50%; background: var(--accent); color: var(--bg); display: grid; place-items: center; font-family: var(--display); font-weight: 600; font-size: 20px; }
+.phead h2 { font-size: 24px; margin: 0; line-height: 1.15; }
+.days { color: var(--muted); font-size: 13px; margin-top: 2px; font-variant-numeric: tabular-nums; }
+.tag { display: inline-block; margin-top: 6px; font-size: 12px; border: 1px solid var(--line); border-radius: 999px; padding: 1px 10px; color: var(--muted); }
+.label { font-size: 11.5px; letter-spacing: .08em; text-transform: uppercase; color: var(--muted); margin: 0 0 6px; font-weight: 500; }
+.panel p { margin: 0; max-width: 62ch; }
+.panel ul { margin: 0; padding-left: 18px; display: flex; flex-direction: column; gap: 3px; }
+.todo { list-style: none; padding: 0 !important; }
+.todo label { display: flex; gap: 10px; align-items: flex-start; cursor: pointer; }
+.todo input { margin-top: 5px; accent-color: var(--route); }
+.todo input:checked + span { color: var(--muted); text-decoration: line-through; }
+.sec { display: flex; flex-direction: column; }
+textarea { width: 100%; min-height: 110px; resize: vertical; font: inherit; color: var(--ink); background: var(--bg); border: 1px solid var(--line); border-radius: 6px; padding: 10px; }
+.row { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; margin-top: 8px; }
+.btn { border: 1px solid var(--line); background: transparent; border-radius: 6px; padding: 5px 12px; font-size: 13px; }
+.btn:hover { border-color: var(--route); }
+#export { display: none; margin-top: 8px; }
+
+@media (max-width: 920px) {
+  .grid { grid-template-columns: minmax(0, 1fr); }
+  .panel { position: static; }
+  #map { max-height: none; }
+}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">
+      <div class="seal" aria-hidden="true">楊</div>
+      <div>
+        <h1 id="t-title"></h1>
+        <div class="sub" id="t-sub"></div>
+      </div>
+    </div>
+    <div class="tools">
+      <label class="check"><input type="checkbox" id="jx" checked><span id="t-jx"></span></label>
+      <div class="seg" role="group" aria-label="Language">
+        <button id="l-en" aria-pressed="true">English</button>
+        <button id="l-zh" aria-pressed="false">中文</button>
+      </div>
+    </div>
+  </header>
+
+  <div class="grid">
+    <div class="left">
+      <div class="mapframe">
+        <svg id="map" role="img" aria-label="Schematic map of the migration route"></svg>
+        <div class="ctl">
+          <button id="zin" aria-label="Zoom in">+</button>
+          <button id="zout" aria-label="Zoom out">−</button>
+          <button id="zreset" class="wide"></button>
+        </div>
+        <div class="caption" id="t-cap"></div>
+      </div>
+
+      <div class="card">
+        <div class="era"><strong id="era-name"></strong><span class="yr" id="era-yr"></span></div>
+        <input type="range" id="year" min="-200" max="1650" step="10" value="1650" aria-label="Timeline">
+        <div class="chips" id="chips"></div>
+        <p class="fine" id="t-fine"></p>
+      </div>
+
+      <div class="card">
+        <h2 id="t-strip"></h2>
+        <div class="strip" id="strip"></div>
+      </div>
+    </div>
+
+    <aside class="panel card" id="panel" aria-live="polite"></aside>
+  </div>
+</div>
+
+<script>
+(function () {
+  var LON0 = 107, LAT0 = 36.4, SX = 50, SY = 57.7, W = 750, H = 819;
+  function P(lon, lat) { return [(lon - LON0) * SX, (LAT0 - lat) * SY]; }
+
+  var STOPS = [
+    { n: 1, days: [1, 5], from: -200, era: ['Han era', '汉代'], en: "Xi'an", zh: '西安',
+      sig: ["Ancient Chang'an (长安), the political and cultural world associated with the Tang, and the broader Guanzhong heartland.",
+            '古长安，与唐代政治文化世界相连，也是关中腹地的中心。'],
+      focus: [["Daming Palace", "大明宫"], ["Tang Chang'an city site", "唐长安城遗址"], ["Shaanxi History Museum", "陕西历史博物馆"],
+              ["Han Chang'an ruins", "汉长安城遗址"], ["Big Wild Goose Pagoda", "大雁塔"], ["City wall", "城墙"]],
+      todo: [["Ask local archives or libraries about Yang family genealogies (杨氏族谱)", "向档案馆或图书馆查询杨氏族谱"],
+             ["Photograph museum labels on Han and Tang officials surnamed Yang", "拍摄博物馆中杨姓汉唐官员的展牌"],
+             ["Note which sites match your family's hall name (堂号)", "记下与本家堂号相关的地点"]] },
+    { n: 2, days: [6, 7], from: 0, era: ['Eastern Han', '东汉'], en: 'Huayin and Weinan', zh: '华阴、渭南',
+      sig: ['Eastern Shaanxi context for the Hongnong Yang tradition and for Yang Zhen (杨震), who was from Huayin County in Hongnong Commandery.',
+            '陕东地区，与弘农杨氏传统相关，也是出自弘农郡华阴县的杨震的故乡背景。'],
+      focus: [["Huashan foothills", "华山脚下"], ["Huayin old town area", "华阴老城区"],
+              ["Local gazetteer or genealogy enquiries in Weinan and Huayin", "渭南、华阴地方志与族谱查询"]],
+      todo: [["Visit the Weinan and Huayin local history offices (地方志办公室)", "拜访渭南、华阴地方志办公室"],
+             ["Ask about Yang Zhen memorials or Yang clan halls", "询问杨震纪念地或杨氏宗祠"],
+             ["Copy gazetteer entries on the Yang surname", "抄录方志中杨姓相关条目"]] },
+    { n: 3, days: [8, 9], from: -100, era: ['Han era', '汉代'], en: 'Lingbao and Sanmenxia', zh: '灵宝、三门峡',
+      sig: ['Historic Hongnong Commandery area, a key symbolic homeland for the Hongnong Yang clan (弘农杨氏).',
+            '古弘农郡一带，是弘农杨氏最重要的象征性祖地。'],
+      focus: [["Hongnong related place research", "弘农相关地名考察"], ["Yellow River landscape", "黄河风光"], ["County museum", "县博物馆"],
+              ["Local cultural bureau", "地方文化局"], ["Local archives enquiry", "档案馆查询"]],
+      todo: [["Ask the cultural bureau for Hongnong Yang research contacts", "向文化局询问弘农杨氏研究联系人"],
+             ["Check the county museum for Yang related collections", "查看县博物馆杨氏相关藏品"],
+             ["Request archive access rules and opening days", "了解档案馆查阅规定与开放日"]] },
+    { n: 4, days: [10, 11], from: 200, era: ['Han to Tang', '汉至唐'], en: 'Luoyang', zh: '洛阳',
+      sig: ['Another major ancient capital and Central Plains reference point, useful for understanding the wider northern setting before southward movement.',
+            '又一座古都，是中原的参照点，有助于理解南迁之前的北方大背景。'],
+      focus: [["Longmen Grottoes", "龙门石窟"], ["Luoyang Museum", "洛阳博物馆"], ["Sui Tang Luoyang City National Heritage Park", "隋唐洛阳城国家遗址公园"]],
+      todo: [["Look for Yang surname inscriptions at Longmen", "在龙门石窟寻找杨姓题记"],
+             ["Ask the museum about Northern Wei and Tang tomb epitaphs (墓志)", "向博物馆询问北魏、唐代墓志"],
+             ["Write a short note on the northern setting for your family record", "为家史写一段北方背景说明"]] },
+    { n: 5, days: [12, 14], from: 700, era: ['Tang to Song', '唐至宋'], en: 'Ganzhou or Nanchang', zh: '赣州、南昌', optional: true,
+      sig: ['Jiangxi was an important southward migration corridor. Include it only if your genealogy identifies a Jiangxi node.',
+            '江西是南迁的重要通道。只有族谱记载了江西一站时，才需要纳入。'],
+      focus: [["Hakka cultural material in southern Jiangxi", "赣南客家文化资料"], ["Local genealogy libraries", "地方谱牒馆"], ["Ancestral village research", "祖村调查"]],
+      todo: [["Confirm in your 族谱 that a Jiangxi node exists", "先在族谱中确认是否有江西一站"],
+             ["Visit a genealogy library and search the Yang surname", "到谱牒馆检索杨姓"],
+             ["Ask about migration lines from Jiangxi to Fujian", "询问由江西入闽的迁徙线索"]] },
+    { n: 6, days: [15, 17], from: 900, era: ['Tang to Song', '唐至宋'], en: 'Putian, Quanzhou, Zhangzhou', zh: '莆田、泉州、漳州',
+      sig: ['Fujian is the critical intermediate cultural and migratory zone before Chaoshan.',
+            '福建是进入潮汕之前最关键的文化与迁徙中间地带。'],
+      focus: [["Putian for traditional migration narratives", "莆田的传统迁徙叙事"], ["Quanzhou for maritime and Southern Min history", "泉州的海洋史与闽南史"],
+              ["Zhangzhou for southern Fujian context", "漳州的闽南背景"]],
+      todo: [["Compare your branch's migration story with Putian narratives", "把本支迁徙说法与莆田传说对照"],
+             ["Ask Quanzhou scholars about Southern Min Yang lineages", "向泉州学者询问闽南杨氏支系"],
+             ["Record place names that also appear in Chaoshan", "记下同样出现在潮汕的地名"]] },
+    { n: 7, days: [18, 21], from: 1100, era: ['Song to Ming', '宋至明'], en: 'Chaozhou, Shantou, family village', zh: '潮州、汕头、祖村',
+      sig: ['The actual Teochew homeland, where your branch may be documented through ancestral halls, genealogy, tablets and graves.',
+            '真正的潮汕故乡，你这一支可能记录在宗祠、族谱、神主牌和坟墓之中。'],
+      focus: [["Chaozhou old city", "潮州古城"], ["Ancestral hall visits", "宗祠探访"], ["Village interviews", "村中访谈"],
+              ["Clan association", "宗亲会"], ["Shantou diaspora history", "汕头侨史"]],
+      todo: [["Photograph tablets, couplets and graves with dates", "拍摄神主牌、楹联与墓碑，并记下年代"],
+             ["Interview village elders and write down the generation names (字辈)", "访谈村中长辈，抄录字辈"],
+             ["Meet the clan association and ask to copy the 族谱", "拜会宗亲会，请求复印族谱"],
+             ["Visit Shantou diaspora archives", "查访汕头侨史资料"]] }
+  ];
+
+  // lab: [dx, dy, anchor] in screen units; main = stop marker number (0 for plain pins)
+  var NODES = [
+    { id: 'xian', s: 1, lon: 108.95, lat: 34.27, en: "Xi'an", zh: '西安', main: 1, lab: [0, 27, 'middle'] },
+    { id: 'weinan', s: 2, lon: 109.51, lat: 34.50, en: 'Weinan', zh: '渭南', main: 0, lab: [0, 15, 'middle'] },
+    { id: 'huayin', s: 2, lon: 110.09, lat: 34.57, en: 'Huayin', zh: '华阴', main: 2, lab: [0, -18, 'middle'] },
+    { id: 'lingbao', s: 3, lon: 110.89, lat: 34.52, en: 'Lingbao', zh: '灵宝', main: 3, lab: [0, 28, 'middle'] },
+    { id: 'sanmenxia', s: 3, lon: 111.20, lat: 34.77, en: 'Sanmenxia', zh: '三门峡', main: 0, lab: [8, -6, 'start'] },
+    { id: 'luoyang', s: 4, lon: 112.45, lat: 34.62, en: 'Luoyang', zh: '洛阳', main: 4, lab: [0, -18, 'middle'] },
+    { id: 'ganzhou', s: 5, lon: 114.93, lat: 25.83, en: 'Ganzhou', zh: '赣州', main: 5, lab: [17, 4, 'start'] },
+    { id: 'nanchang', s: 5, lon: 115.86, lat: 28.68, en: 'Nanchang', zh: '南昌', main: 0, lab: [9, 4, 'start'], offroute: true },
+    { id: 'putian', s: 6, lon: 119.01, lat: 25.43, en: 'Putian', zh: '莆田', main: 0, lab: [-8, 4, 'end'] },
+    { id: 'quanzhou', s: 6, lon: 118.68, lat: 24.87, en: 'Quanzhou', zh: '泉州', main: 6, lab: [17, 4, 'start'] },
+    { id: 'zhangzhou', s: 6, lon: 117.65, lat: 24.51, en: 'Zhangzhou', zh: '漳州', main: 0, lab: [0, 17, 'middle'] },
+    { id: 'chaozhou', s: 7, lon: 116.62, lat: 23.66, en: 'Chaozhou', zh: '潮州', main: 7, lab: [-17, 4, 'end'] },
+    { id: 'shantou', s: 7, lon: 116.68, lat: 23.35, en: 'Shantou', zh: '汕头', main: 0, lab: [9, 12, 'start'] }
+  ];
+  var ROUTE = ['xian', 'weinan', 'huayin', 'lingbao', 'sanmenxia', 'luoyang', 'ganzhou', 'putian', 'quanzhou', 'zhangzhou', 'chaozhou', 'shantou'];
+  var byId = {}; NODES.forEach(function (n) { n.p = P(n.lon, n.lat); byId[n.id] = n; });
+
+  var COAST = [[100,40],[118.5,40],[118.0,38.3],[118.8,37.5],[119.0,37.2],[120.3,37.1],[121.5,37.5],[122.5,37.4],[122.2,36.8],[120.7,36.1],[119.5,35.3],[119.2,34.7],
+    [120.8,32.9],[121.9,31.7],[121.9,30.9],[121.5,30.3],[122.0,29.9],[121.6,28.5],[121.0,27.6],[120.2,26.6],[119.7,26.0],[119.7,25.4],[119.3,24.9],[118.9,24.7],[118.1,24.4],
+    [117.5,23.7],[116.8,23.2],[115.5,22.8],[114.3,22.3],[100,22.3]];
+  var YELLOW = [[110.5,38],[110.6,36],[110.2,35],[110.3,34.6],[111.2,34.8],[112.5,34.9],[113.6,34.95],[114.5,35.1],[116,36],[118,37.2],[119,37.6]];
+  var YANGTZE = [[106.5,29.6],[108,30.8],[109.5,30.9],[111.3,30.7],[113.0,29.7],[114.3,30.6],[115.9,29.7],[117.2,30.5],[118.8,32.0],[121.0,31.7],[121.9,31.5]];
+  var WEI = [[106.5,34.4],[108.0,34.3],[109.5,34.5],[110.3,34.6]];
+  function path(pts, close) {
+    return pts.map(function (q, i) { var p = P(q[0], q[1]); return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('') + (close ? 'Z' : '');
+  }
+
+  var ERAS = [
+    [-9999, 220, 'Han', '汉'], [220, 581, 'Wei, Jin, Northern and Southern Dynasties', '魏晋南北朝'], [581, 618, 'Sui', '隋'], [618, 907, 'Tang', '唐'],
+    [907, 960, 'Five Dynasties', '五代'], [960, 1279, 'Song', '宋'], [1279, 1368, 'Yuan', '元'], [1368, 9999, 'Ming', '明']
+  ];
+  var CHIPS = [[100, 'Han', '汉'], [750, 'Sui and Tang', '隋唐'], [1100, 'Song', '宋'], [1500, 'Ming', '明'], [1650, 'Full route', '全程']];
+
+  var T = {
+    en: {
+      title: 'Hongnong Yang Route', sub: 'Xi\'an to Chaoshan in 21 days. Follow the 弘農楊氏 line southward.',
+      jx: 'Include Jiangxi node', reset: 'Reset', cap: 'Schematic map, not to scale. Arrows show the traditional direction of movement, not a surveyed road.',
+      fine: 'All dates are traditional and approximate. Check each one against your own 族谱.',
+      strip: 'Day by day', sig: 'Genealogical significance', focus: 'Suggested sites and focus', todo: 'Research to do', notes: 'My notes',
+      notesPh: 'What you found, who you met, names and dates.', copy: 'Copy my notes', saved: 'Saved in this browser only.', copied: 'Copied.',
+      days: 'Days', to: 'to', from: 'Traditional link from', optional: 'Optional stop', yrCE: 'CE', yrBCE: 'BCE', d: 'd', approx: 'c.', lang: 'Language'
+    },
+    zh: {
+      title: '弘农杨氏寻根路线', sub: '二十一天，从西安到潮汕，沿弘农杨氏南迁之路寻根。',
+      jx: '纳入江西一站', reset: '复位', cap: '示意图，不按比例。箭头表示传统上的迁徙方向，并非实测道路。',
+      fine: '所有年代均为传统说法，仅作大致参考，请以自家族谱为准。',
+      strip: '逐日行程', sig: '家谱意义', focus: '建议考察地点与重点', todo: '待办研究', notes: '我的笔记',
+      notesPh: '记下发现、见过的人、姓名与年代。', copy: '复制我的笔记', saved: '仅保存在本浏览器。', copied: '已复制。',
+      days: '第', to: '至', from: '传统上始于', optional: '可选站点', yrCE: '年', yrBCE: '年', d: '天', approx: '约', lang: '语言'
+    }
+  };
+
+  var lang = 'en', year = 1650, jx = true, sel = 1, view = { cx: W / 2, cy: H / 2, w: W }, raf = 0;
+  var store = { notes: {}, done: {}, lang: 'en' };
+  var KEY = 'hongnong-yang-route-v1';
+  try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); store.notes = o.notes || {}; store.done = o.done || {}; if (o.lang) lang = o.lang; } } catch (e) {}
+  function save() { try { localStorage.setItem(KEY, JSON.stringify({ notes: store.notes, done: store.done, lang: lang })); } catch (e) {} }
+
+  var $ = function (id) { return document.getElementById(id); };
+  var svg = $('map');
+  var reduced = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  function t(k) { return T[lang][k]; }
+  function L(pair) { return lang === 'zh' ? pair[1] : pair[0]; }
+  function stopOf(n) { return STOPS[n - 1]; }
+  function stopVisible(s) { return (!s.optional || jx) && year >= s.from; }
+  function nodeShown(nd) { return !(nd.s === 5 && !jx); }
+  function nodeActive(nd) { return stopVisible(stopOf(nd.s)); }
+  function stopName(s) { return lang === 'zh' ? s.zh : s.en; }
+  function dayText(s) { return lang === 'zh' ? '第 ' + s.days[0] + ' 至 ' + s.days[1] + ' 天' : 'Days ' + s.days[0] + ' to ' + s.days[1]; }
+
+  function viewH() { return view.w * H / W; }
+  function k() { return view.w / W; }
+
+  function base() {
+    var out = '';
+    for (var lon = 108; lon <= 122; lon += 2) { var a = P(lon, 40), b = P(lon, 20); out += '<line x1="' + a[0] + '" y1="-200" x2="' + b[0] + '" y2="1100" stroke="var(--line)" stroke-width="0.6" opacity="0.7"/>'; }
+    for (var lat = 24; lat <= 36; lat += 2) { var c = P(100, lat), d = P(130, lat); out += '<line x1="-400" y1="' + c[1] + '" x2="1200" y2="' + d[1] + '" stroke="var(--line)" stroke-width="0.6" opacity="0.7"/>'; }
+    return '<path d="' + path(COAST, true) + '" fill="var(--land)" stroke="var(--line)" stroke-width="1.2"/>' + out +
+      '<path d="' + path(YELLOW) + '" fill="none" stroke="var(--river)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="' + path(YANGTZE) + '" fill="none" stroke="var(--river)" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round"/>' +
+      '<path d="' + path(WEI) + '" fill="none" stroke="var(--river)" stroke-width="1.6" stroke-linecap="round"/>';
+  }
+  function geoLabels(kk) {
+    function tx(lon, lat, s, size) { var p = P(lon, lat); return '<text x="' + p[0] + '" y="' + p[1] + '" font-size="' + (size * kk) + '" fill="var(--muted)" font-style="italic" text-anchor="middle" opacity="0.9">' + s + '</text>'; }
+    var yellow = lang === 'zh' ? '黄河' : 'Yellow River', yang = lang === 'zh' ? '长江' : 'Yangtze', wei = lang === 'zh' ? '渭河' : 'Wei River';
+    var south = lang === 'zh' ? '南海' : 'South China Sea', east = lang === 'zh' ? '东海' : 'East China Sea';
+    return tx(110.9, 36.0, yellow, 11) + tx(112.6, 30.4, yang, 11) + tx(108.2, 34.65, wei, 9.5) + tx(117.8, 22.7, south, 11) + tx(121.4, 28.3, east, 11);
+  }
+  function arrow(a, b, kk, dashed, active) {
+    var dx = b.p[0] - a.p[0], dy = b.p[1] - a.p[1], d = Math.sqrt(dx * dx + dy * dy), ux = dx / d, uy = dy / d;
+    var ra = (a.main ? 12 : 5) * kk + 2 * kk, rb = (b.main ? 12 : 5) * kk + 3 * kk;
+    if (d < ra + rb + 6 * kk) return '';
+    var x1 = a.p[0] + ux * ra, y1 = a.p[1] + uy * ra, x2 = b.p[0] - ux * rb, y2 = b.p[1] - uy * rb;
+    var col = active ? 'var(--route)' : 'var(--muted)', op = active ? 1 : 0.35, sw = (active ? 2.4 : 1.4) * kk;
+    var s = 8 * kk, px = -uy, py = ux;
+    var head = active ? '<polygon points="' + x2 + ',' + y2 + ' ' + (x2 - ux * s + px * s * 0.5) + ',' + (y2 - uy * s + py * s * 0.5) + ' ' + (x2 - ux * s - px * s * 0.5) + ',' + (y2 - uy * s - py * s * 0.5) + '" fill="' + col + '"/>' : '';
+    return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + col + '" stroke-width="' + sw + '" opacity="' + op + '"' +
+      (dashed || !active ? ' stroke-dasharray="' + (6 * kk) + ' ' + (5 * kk) + '"' : '') + ' stroke-linecap="round"/>' + head;
+  }
+  function draw() {
+    var kk = k(), h = viewH();
+    svg.setAttribute('viewBox', (view.cx - view.w / 2) + ' ' + (view.cy - h / 2) + ' ' + view.w + ' ' + h);
+    var list = ROUTE.filter(function (id) { return nodeShown(byId[id]); }).map(function (id) { return byId[id]; });
+    var out = '<g font-family="var(--body)">' + base() + geoLabels(kk);
+    for (var i = 0; i < list.length - 1; i++) {
+      var a = list[i], b = list[i + 1], dashed = a.s === 5 || b.s === 5;
+      out += arrow(a, b, kk, dashed, nodeActive(a) && nodeActive(b));
+    }
+    var showSub = kk < 0.6;
+    NODES.forEach(function (nd) {
+      if (!nodeShown(nd)) return;
+      var on = nodeActive(nd), isSel = nd.s === sel, x = nd.p[0], y = nd.p[1];
+      var name = lang === 'zh' ? nd.zh : nd.en + ' ' + nd.zh;
+      var op = on ? 1 : 0.3, r = nd.main ? 12 : 5;
+      var g = '<g class="hit" data-stop="' + nd.s + '" opacity="' + op + '" transform="translate(' + x + ' ' + y + ') scale(' + kk + ')">';
+      if (isSel && nd.main) g += '<circle r="18" fill="none" stroke="var(--accent)" stroke-width="2"/>';
+      if (nd.main) g += '<circle r="' + r + '" fill="' + (isSel ? 'var(--accent)' : 'var(--pin)') + '" stroke="var(--land)" stroke-width="2"/><text y="4.6" text-anchor="middle" font-size="13" font-weight="700" font-family="var(--display)" fill="var(--bg)">' + nd.main + '</text>';
+      else g += '<circle r="' + (isSel ? 5.5 : 4.5) + '" fill="' + (isSel ? 'var(--accent)' : 'var(--land)') + '" stroke="' + (isSel ? 'var(--accent)' : 'var(--pin)') + '" stroke-width="2"/>';
+      if (nd.main || showSub) g += '<text x="' + nd.lab[0] + '" y="' + nd.lab[1] + '" text-anchor="' + nd.lab[2] + '" font-size="' + (nd.main ? 12.5 : 11) + '" font-weight="' + (nd.main ? 700 : 500) + '" fill="var(--ink)" stroke="var(--land)" stroke-width="3.5" paint-order="stroke" stroke-linejoin="round">' + name + '</text>';
+      g += '<circle r="' + (nd.main ? 20 : 12) + '" fill="transparent"/></g>';
+      out += g;
+    });
+    svg.innerHTML = out + '</g>';
+  }
+
+  function setView(v) { view = v; draw(); }
+  function fly(target) {
+    cancelAnimationFrame(raf);
+    if (reduced) { setView(target); return; }
+    var s = { cx: view.cx, cy: view.cy, w: view.w }, t0 = performance.now();
+    (function step(now) {
+      var p = Math.min(1, (now - t0) / 600), e = 1 - Math.pow(1 - p, 3);
+      setView({ cx: s.cx + (target.cx - s.cx) * e, cy: s.cy + (target.cy - s.cy) * e, w: s.w + (target.w - s.w) * e });
+      if (p < 1) raf = requestAnimationFrame(step);
+    })(t0);
+  }
+  function fitAll() { return { cx: W / 2, cy: H / 2, w: W }; }
+  function fitStop(n) {
+    var pts = NODES.filter(function (nd) { return nd.s === n && nodeShown(nd); }).map(function (nd) { return nd.p; });
+    var xs = pts.map(function (p) { return p[0]; }), ys = pts.map(function (p) { return p[1]; });
+    var minx = Math.min.apply(null, xs), maxx = Math.max.apply(null, xs), miny = Math.min.apply(null, ys), maxy = Math.max.apply(null, ys);
+    var w = Math.max(maxx - minx + 240, (maxy - miny + 200) * W / H, 280);
+    return { cx: (minx + maxx) / 2, cy: (miny + maxy) / 2, w: Math.min(w, W) };
+  }
+
+  function select(n, noFly) {
+    sel = n; renderPanel(); renderStrip(); draw();
+    if (!noFly) fly(fitStop(n));
+  }
+
+  function renderStrip() {
+    $('strip').innerHTML = STOPS.map(function (s) {
+      var off = s.optional && !jx;
+      return '<button style="flex:' + (s.days[1] - s.days[0] + 1) + '" data-n="' + s.n + '"' + (off ? ' disabled' : '') + (s.n === sel ? ' aria-current="true"' : '') +
+        ' title="' + stopName(s) + '"><b>' + s.n + '</b><span>' + (s.days[1] - s.days[0] + 1) + t('d') + '</span></button>';
+    }).join('');
+  }
+  $('strip').addEventListener('click', function (e) { var b = e.target.closest('button[data-n]'); if (b && !b.disabled) select(+b.dataset.n); });
+
+  function renderPanel() {
+    var s = stopOf(sel), done = store.done[s.n] || {};
+    var html = '<div class="phead"><div class="badge">' + s.n + '</div><div><h2>' + stopName(s) + (lang === 'en' ? ' <span style="font-family:var(--serif-zh);font-size:18px;color:var(--muted)">' + s.zh + '</span>' : '') + '</h2>' +
+      '<div class="days">' + dayText(s) + (s.optional ? ' · ' + t('optional') : '') + '</div><span class="tag">' + t('from') + ': ' + L(s.era) + '</span></div></div>' +
+      '<div class="sec"><p class="label">' + t('sig') + '</p><p>' + L(s.sig) + '</p></div>' +
+      '<div class="sec"><p class="label">' + t('focus') + '</p><ul>' + s.focus.map(function (f) { return '<li>' + (lang === 'zh' ? f[1] : f[0] + ' <span style="color:var(--muted)">' + f[1] + '</span>') + '</li>'; }).join('') + '</ul></div>' +
+      '<div class="sec"><p class="label">' + t('todo') + '</p><ul class="todo">' + s.todo.map(function (q, i) {
+        return '<li><label><input type="checkbox" data-i="' + i + '"' + (done[i] ? ' checked' : '') + '><span>' + L(q) + '</span></label></li>';
+      }).join('') + '</ul></div>' +
+      '<div class="sec"><p class="label">' + t('notes') + '</p><textarea id="note" placeholder="' + t('notesPh') + '"></textarea>' +
+      '<div class="row"><button class="btn" id="copy">' + t('copy') + '</button><span class="fine" style="margin:0" id="msg">' + t('saved') + '</span></div>' +
+      '<textarea id="export" readonly></textarea></div>';
+    $('panel').innerHTML = html;
+    $('note').value = store.notes[s.n] || '';
+  }
+  $('panel').addEventListener('input', function (e) {
+    if (e.target.id === 'note') { store.notes[sel] = e.target.value; save(); }
+  });
+  $('panel').addEventListener('change', function (e) {
+    if (e.target.matches('.todo input')) { var d = store.done[sel] || (store.done[sel] = {}); d[e.target.dataset.i] = e.target.checked; save(); }
+  });
+  $('panel').addEventListener('click', function (e) {
+    if (e.target.id !== 'copy') return;
+    var text = STOPS.map(function (s) {
+      var d = store.done[s.n] || {};
+      return s.n + '. ' + s.en + ' ' + s.zh + ' (' + dayText(s) + ')\n' + s.todo.map(function (q, i) { return (d[i] ? '[x] ' : '[ ] ') + L(q); }).join('\n') + '\n' + (store.notes[s.n] || '');
+    }).join('\n\n');
+    var msg = $('msg'), ex = $('export');
+    function fallback() { ex.style.display = 'block'; ex.value = text; ex.focus(); ex.select(); }
+    try { navigator.clipboard.writeText(text).then(function () { msg.textContent = t('copied'); }, fallback); } catch (err) { fallback(); }
+  });
+
+  function eraOf(y) { for (var i = 0; i < ERAS.length; i++) if (y >= ERAS[i][0] && y < ERAS[i][1]) return ERAS[i]; return ERAS[ERAS.length - 1]; }
+  function renderTime() {
+    var e = eraOf(year);
+    $('era-name').textContent = year >= 1650 ? (lang === 'zh' ? '全程' : 'Full route') : (lang === 'zh' ? e[3] : e[2]);
+    var yy = Math.abs(year);
+    $('era-yr').textContent = year >= 1650 ? '' : (lang === 'zh' ? t('approx') + (year < 0 ? '公元前' : '公元') + yy + t('yrCE') : t('approx') + ' ' + yy + ' ' + (year < 0 ? t('yrBCE') : t('yrCE')));
+  }
+  $('year').addEventListener('input', function (e) { year = +e.target.value; renderTime(); draw(); });
+  function renderChips() {
+    $('chips').innerHTML = CHIPS.map(function (c) { return '<button data-y="' + c[0] + '">' + (lang === 'zh' ? c[2] : c[1]) + '</button>'; }).join('');
+  }
+  $('chips').addEventListener('click', function (e) { var b = e.target.closest('button[data-y]'); if (!b) return; year = +b.dataset.y; $('year').value = year; renderTime(); draw(); });
+
+  function applyStatic() {
+    document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
+    $('t-title').textContent = t('title'); $('t-sub').textContent = t('sub'); $('t-jx').textContent = t('jx');
+    $('zreset').textContent = t('reset'); $('t-cap').textContent = t('cap'); $('t-fine').textContent = t('fine'); $('t-strip').textContent = t('strip');
+    $('l-en').setAttribute('aria-pressed', lang === 'en'); $('l-zh').setAttribute('aria-pressed', lang === 'zh');
+    document.title = lang === 'zh' ? '弘农杨氏寻根路线' : 'Hongnong Yang Route';
+    renderChips(); renderTime(); renderStrip(); renderPanel(); draw();
+  }
+  $('l-en').addEventListener('click', function () { lang = 'en'; save(); applyStatic(); });
+  $('l-zh').addEventListener('click', function () { lang = 'zh'; save(); applyStatic(); });
+  $('jx').addEventListener('change', function (e) {
+    jx = e.target.checked;
+    if (!jx && sel === 5) sel = 4;
+    renderStrip(); renderPanel(); draw();
+  });
+
+  $('zin').addEventListener('click', function () { fly({ cx: view.cx, cy: view.cy, w: Math.max(160, view.w * 0.65) }); });
+  $('zout').addEventListener('click', function () { fly({ cx: view.cx, cy: view.cy, w: Math.min(W, view.w / 0.65) }); });
+  $('zreset').addEventListener('click', function () { fly(fitAll()); });
+
+  svg.addEventListener('click', function (e) {
+    var g = e.target.closest('[data-stop]'); if (!g) return;
+    var n = +g.getAttribute('data-stop'); if (stopOf(n).optional && !jx) return; select(n);
+  });
+  var drag = null;
+  svg.addEventListener('pointerdown', function (e) { if (e.pointerType !== 'mouse' || e.button !== 0) return; drag = { x: e.clientX, y: e.clientY, cx: view.cx, cy: view.cy, moved: false }; });
+  window.addEventListener('pointermove', function (e) {
+    if (!drag) return;
+    var dx = e.clientX - drag.x, dy = e.clientY - drag.y;
+    if (!drag.moved && Math.abs(dx) + Math.abs(dy) < 5) return;
+    drag.moved = true; cancelAnimationFrame(raf);
+    var r = svg.getBoundingClientRect(), sc = Math.min(r.width / view.w, r.height / viewH());
+    setView({ cx: drag.cx - dx / sc, cy: drag.cy - dy / sc, w: view.w });
+  });
+  window.addEventListener('pointerup', function () { drag = null; });
+
+  applyStatic();
+})();
+</script>
