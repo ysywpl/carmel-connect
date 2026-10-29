@@ -99,6 +99,16 @@ textarea { width: 100%; min-height: 110px; resize: vertical; font: inherit; colo
 .btn:hover { border-color: var(--route); }
 #export { display: none; margin-top: 8px; }
 
+table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
+.tablewrap { overflow-x: auto; }
+th, td { text-align: left; padding: 6px 10px 6px 0; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-weight: 500; color: var(--muted); font-size: 12px; letter-spacing: .06em; text-transform: uppercase; }
+td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font-size: 11.5px; border: 1px solid var(--line); border-radius: 999px; padding: 0 8px; color: var(--muted); white-space: nowrap; }
+.pill.sourced { border-color: var(--route); color: var(--route); }
+.pill.estimate { border-color: var(--accent); color: var(--accent); }
+.leg { display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
+.fine a { color: var(--route); }
 @media (max-width: 920px) {
   .grid { grid-template-columns: minmax(0, 1fr); }
   .panel { position: static; }
@@ -147,6 +157,13 @@ textarea { width: 100%; min-height: 110px; resize: vertical; font: inherit; colo
       <div class="card">
         <h2 id="t-strip"></h2>
         <div class="strip" id="strip"></div>
+      </div>
+
+      <div class="card">
+        <h2 id="t-travel"></h2>
+        <div class="tablewrap"><table id="travel"></table></div>
+        <p class="fine" id="t-travelfine"></p>
+        <p class="fine" id="srcs"></p>
       </div>
     </div>
 
@@ -263,6 +280,44 @@ textarea { width: 100%; min-height: 110px; resize: vertical; font: inherit; colo
     return pts.map(function (q, i) { var p = P(q[0], q[1]); return (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1); }).join('') + (close ? 'Z' : '');
   }
 
+  // Travel legs between stop anchors. conf: sourced (found in web sources, may be dated), estimate (my own), unchecked.
+  var ANCHOR = { 1: 'baoji', 2: 'xian', 3: 'huayin', 4: 'luoyang', 5: 'nanjing', 6: 'quanzhou', 7: 'chaozhou', 8: 'hongdong', 9: 'wuyishan' };
+  var LEGS = {
+    '1-2': { conf: 'sourced', mode: ['High speed train, Baoji South to Xi\'an North, about 138 km of track', '高铁，宝鸡南至西安北，线路约138公里'], time: ['About 50 to 60 min', '约50至60分钟'],
+      note: ['The train times do not cover getting from Baoji to the Zhouyuan sites. Check local bus or car hire for those.', '火车时间不含从宝鸡前往周原各地，请另查当地公交或租车。']},
+    '2-3': { conf: 'sourced', mode: ['High speed train, Xi\'an North to Huashan North (Huayin), about 121 km', '高铁，西安北至华山北（华阴），约121公里'], time: ['About 30 min (28 to 35 min on sampled trains)', '约30分钟（抽样车次28至35分钟）'],
+      note: ['Huashan North is in Huayin, Weinan.', '华山北站位于渭南华阴。']},
+    '3-4': { conf: 'estimate', mode: ['High speed train on the Zhengzhou to Xi\'an line, Huashan North to Luoyang Longmen', '郑西高铁，华山北至洛阳龙门'], time: ['About 1 hour (my estimate)', '约1小时（我的估算）'],
+      note: ['For comparison, Xi\'an to Luoyang is 360 to 380 km and takes 1.5 to 2 hours. Lingbao and Sanmenxia are not checked.', '作为参照，西安到洛阳为360至380公里，需1.5至2小时。灵宝与三门峡尚未核实。']},
+    '4-5': { conf: 'sourced', mode: ['High speed train, Luoyang Longmen to Nanjing South, about 834 km', '高铁，洛阳龙门至南京南，约834公里'], time: ['About 4h05 to 5h15 on sampled 2023 trains', '2023年抽样车次约4小时05分至5小时15分'],
+      note: ['Schedules are from 2023, so check current times.', '时刻表来自2023年，请核对最新班次。']},
+    '5-6': { conf: 'unchecked', mode: ['Train, probably with a change', '火车，可能需要换乘'], time: ['One aggregator site shows about 9 hours, once daily. Not verified.', '某聚合网站显示约9小时，每日一班，未核实。'],
+      note: ['Plan this as a full travel day and check 12306 before fixing the dates.', '请按整天行程安排，确定日期前先查12306。']},
+    '5-9': { conf: 'unchecked', mode: ['Train to Wuyishan East', '火车至武夷山东'], time: ['Not checked', '未核实'], note: ['Check 12306 for direct and connecting trains.', '请在12306查询直达与中转车次。']},
+    '9-6': { conf: 'unchecked', mode: ['Train from Wuyishan East to Quanzhou', '火车，武夷山东至泉州'], time: ['Not checked', '未核实'], note: ['Check 12306 for direct and connecting trains.', '请在12306查询直达与中转车次。']},
+    '6-7': { conf: 'estimate', mode: ['High speed train on the Xiamen to Shenzhen line, Quanzhou to Chaoshan station', '厦深高铁，泉州至潮汕站'], time: ['About 1.5 to 2 hours (my estimate)', '约1.5至2小时（我的估算）'],
+      note: ['Chaoshan station is a stop on trains between Shenzhen and Quanzhou. Chaozhou to Shantou is a short local trip that I did not check.', '潮汕站是深圳至泉州列车的停靠站。潮州至汕头为短途本地行程，未核实。']},
+    '3-8': { conf: 'unchecked', mode: ['Train or road into Shanxi', '火车或公路前往山西'], time: ['Not checked', '未核实'], note: ['Hongdong is in a different province. Check 12306 and local transport.', '洪洞在另一个省份，请查12306与当地交通。']}
+  };
+  var CONF = { sourced: ['From sources, may be dated', '来自资料，可能已过时'], estimate: ['My estimate', '我的估算'], unchecked: ['Not checked', '未核实'] };
+  var SOURCES = [
+    ['Xi\'an to Baoji high speed railway', 'https://en.wikipedia.org/wiki/Xi%27an%E2%80%93Baoji_high-speed_railway'],
+    ['Xi\'an to Huashan trains', 'https://www.chinahighlights.com/china-trains/xian-huashan-train.htm'],
+    ['Xi\'an to Luoyang trains', 'https://www.chinahighlights.com/china-trains/xian-luoyang-train.htm'],
+    ['Luoyang to Nanjing trains', 'https://www.chinahighlights.com/china-trains/luoyang-nanjing-train.htm']
+  ];
+  function legKm(a, b) {
+    var p = byId[ANCHOR[a]], q = byId[ANCHOR[b]], R = 6371, rad = Math.PI / 180;
+    var dLat = (q.lat - p.lat) * rad, dLon = (q.lon - p.lon) * rad;
+    var h = Math.sin(dLat / 2) * Math.sin(dLat / 2) + Math.cos(p.lat * rad) * Math.cos(q.lat * rad) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    return Math.round(2 * R * Math.asin(Math.sqrt(h)) / 10) * 10;
+  }
+  function activeLegs() {
+    var l = wy ? [[1, 2], [2, 3], [3, 4], [4, 5], [5, 9], [9, 6], [6, 7]] : [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7]];
+    if (ext) l.push([3, 8]);
+    return l.map(function (p) { return { a: p[0], b: p[1], km: legKm(p[0], p[1]), d: LEGS[p[0] + '-' + p[1]] }; });
+  }
+
   var ERAS = [
     [-9999, -1046, 'Shang', '商'], [-1046, -770, 'Western Zhou', '西周'], [-770, -221, 'Eastern Zhou', '东周'], [-221, -206, 'Qin', '秦'], [-206, 220, 'Han', '汉'],
     [220, 265, 'Three Kingdoms', '三国'], [265, 317, 'Western Jin', '西晋'], [317, 420, 'Eastern Jin', '东晋'], [420, 581, 'Northern and Southern Dynasties', '南北朝'], [581, 618, 'Sui', '隋'], [618, 907, 'Tang', '唐'],
@@ -273,17 +328,19 @@ textarea { width: 100%; min-height: 110px; resize: vertical; font: inherit; colo
   var T = {
     en: {
       title: 'Hongnong Yang Route', sub: 'Baoji to Chaoshan in 23 days. From the Zhou homeland to the Teochew village, along the 弘農楊氏 line.',
-      ext: 'Include Hongdong extension', wy: 'Include Wuyishan extension (adds about 2 days)', reset: 'Reset', cap: 'Schematic map, not to scale. Arrows show the traditional direction of movement, not a surveyed road.',
+      ext: 'Include Hongdong extension', wy: 'Include Wuyishan extension (adds about 2 days)', reset: 'Reset', cap: 'Schematic map, not to scale. Arrows show the traditional direction of movement, not a surveyed road. Labels on the arrows are straight line distances.',
       fine: 'All dates are traditional and approximate, and surname traditions do not prove your own descent. Check each one against your 族谱. The day plan is a proposed allocation, not a checked transport schedule.',
-      strip: 'Day by day', sig: 'Genealogical significance', focus: 'Suggested sites and focus', todo: 'Research to do', notes: 'My notes',
+      strip: 'Day by day', travel: 'Distance and travel by train', getting: 'Getting here', line: 'Straight line', by: 'By train', startNote: 'Start of the route. Your arrival from home is not covered here.', total: 'Total straight line', legFrom: 'Leg', km: 'km',
+      travelFine: 'Straight line distances are measured on the map between stop anchors, not along the track. Train times are indicative. Check 12306 or a booking site close to your date.', srcs: 'Sources used', sig: 'Genealogical significance', focus: 'Suggested sites and focus', todo: 'Research to do', notes: 'My notes',
       notesPh: 'What you found, who you met, names and dates.', copy: 'Copy my notes', saved: 'Saved in this browser only.', copied: 'Copied.',
       from: 'Traditional link from', optional: 'Optional extension', yrCE: 'CE', yrBCE: 'BCE', d: 'd', approx: 'c.'
     },
     zh: {
       title: '弘农杨氏寻根路线', sub: '二十三天，从宝鸡到潮汕，由周人故地一路寻到潮汕祖村，沿弘农杨氏之线。',
-      ext: '纳入洪洞一站', wy: '纳入武夷山一站（约增加2天）', reset: '复位', cap: '示意图，不按比例。箭头表示传统上的迁徙方向，并非实测道路。',
+      ext: '纳入洪洞一站', wy: '纳入武夷山一站（约增加2天）', reset: '复位', cap: '示意图，不按比例。箭头表示传统上的迁徙方向，并非实测道路。箭头上的数字为直线距离。',
       fine: '所有年代均为传统说法，仅作大致参考，姓氏传说也不能证明你本人的世系，请以自家族谱为准。日程只是建议的时间分配，尚未核对交通班次。',
-      strip: '逐日行程', sig: '家谱意义', focus: '建议考察地点与重点', todo: '待办研究', notes: '我的笔记',
+      strip: '逐日行程', travel: '距离与火车出行', getting: '如何抵达', line: '直线距离', by: '乘火车', startNote: '路线起点，从家出发的行程不在此列。', total: '直线距离合计', legFrom: '路段', km: '公里',
+      travelFine: '直线距离按地图上各站锚点测量，并非沿铁路实际里程。火车时间仅供参考，请临近日期时在12306或订票网站核实。', srcs: '参考资料', sig: '家谱意义', focus: '建议考察地点与重点', todo: '待办研究', notes: '我的笔记',
       notesPh: '记下发现、见过的人、姓名与年代。', copy: '复制我的笔记', saved: '仅保存在本浏览器。', copied: '已复制。',
       from: '传统上始于', optional: '可选延伸', yrCE: '年', yrBCE: '年', d: '天', approx: '约'
     }
@@ -347,6 +404,15 @@ textarea { width: 100%; min-height: 110px; resize: vertical; font: inherit; colo
       out += arrow(a, b, kk, a.s === 9 || b.s === 9, nodeActive(a) && nodeActive(b));
     }
     SPURS.forEach(function (pr) { var a = byId[pr[0]], b = byId[pr[1]]; if (nodeShown(b)) out += arrow(a, b, kk, true, nodeActive(b), true); });
+    activeLegs().forEach(function (x) {
+      if (x.b === 8) return;
+      var a = byId[ANCHOR[x.a]], b = byId[ANCHOR[x.b]];
+      if (!stopVisible(stopOf(x.a)) || !stopVisible(stopOf(x.b))) return;
+      var dx = b.p[0] - a.p[0], dy = b.p[1] - a.p[1], dd = Math.sqrt(dx * dx + dy * dy);
+      if (dd < 120 * kk) return;
+      var mx = (a.p[0] + b.p[0]) / 2 - dy / dd * 10 * kk, my = (a.p[1] + b.p[1]) / 2 + dx / dd * 10 * kk;
+      out += '<text x="' + mx + '" y="' + my + '" text-anchor="middle" font-size="' + 10.5 * kk + '" fill="var(--route)" stroke="var(--land)" stroke-width="' + 3 * kk + '" paint-order="stroke" font-weight="500">' + x.km + ' ' + t('km') + '</text>';
+    });
     var showSub = kk < 0.6;
     NODES.forEach(function (nd) {
       if (!nodeShown(nd)) return;
@@ -398,12 +464,35 @@ textarea { width: 100%; min-height: 110px; resize: vertical; font: inherit; colo
   }
   $('strip').addEventListener('click', function (e) { var b = e.target.closest('button[data-n]'); if (b && !b.disabled) select(+b.dataset.n); });
 
+  function legName(n) { return stopName(stopOf(n)); }
+  function gettingHere(s) {
+    var leg = activeLegs().filter(function (x) { return x.b === s.n; })[0];
+    var h = '<div class="sec"><p class="label">' + t('getting') + '</p>';
+    if (!leg) return h + '<p>' + t('startNote') + '</p></div>';
+    var d = leg.d;
+    h += '<div class="leg"><span><b>' + legName(leg.a) + '</b> to <b>' + legName(leg.b) + '</b></span>' +
+      '<span>' + t('line') + ': ' + leg.km + ' ' + t('km') + '</span>' +
+      '<span>' + t('by') + ': ' + L(d.mode) + '. ' + L(d.time) + '</span>' +
+      '<span><span class="pill ' + d.conf + '">' + L(CONF[d.conf]) + '</span></span>' +
+      '<span class="fine" style="margin:0">' + L(d.note) + '</span></div></div>';
+    return h;
+  }
+  function renderTravel() {
+    var legs = activeLegs(), sum = 0;
+    var rows = legs.map(function (x) {
+      if (x.b !== 8) sum += x.km;
+      return '<tr><td>' + legName(x.a) + ' → ' + legName(x.b) + '</td><td class="n">' + x.km + ' ' + t('km') + '</td><td>' + L(x.d.time) + '</td><td><span class="pill ' + x.d.conf + '">' + L(CONF[x.d.conf]) + '</span></td></tr>';
+    }).join('');
+    $('travel').innerHTML = '<thead><tr><th>' + t('legFrom') + '</th><th>' + t('line') + '</th><th>' + t('by') + '</th><th></th></tr></thead><tbody>' + rows +
+      '<tr><td><b>' + t('total') + '</b></td><td class="n"><b>' + sum + ' ' + t('km') + '</b></td><td></td><td></td></tr></tbody>';
+  }
+
   function renderPanel() {
     var s = stopOf(sel), done = store.done[s.n] || {};
     var html = '<div class="phead"><div class="badge">' + (s.n === 8 ? 'H' : s.n === 9 ? 'W' : s.n) + '</div><div><h2>' + stopName(s) + (lang === 'en' ? ' <span style="font-family:var(--serif-zh);font-size:18px;color:var(--muted)">' + s.zh + '</span>' : '') + '</h2>' +
       '<div class="days">' + dayText(s) + '</div><span class="tag">' + t('from') + ': ' + L(s.era) + '</span></div></div>' +
       '<div class="sec"><p class="label">' + t('sig') + '</p><p>' + L(s.sig) + '</p></div>' +
-      '<div class="sec"><p class="label">' + t('focus') + '</p><ul>' + s.focus.map(function (f) { return '<li>' + (lang === 'zh' ? f[1] : f[0] + ' <span style="color:var(--muted)">' + f[1] + '</span>') + '</li>'; }).join('') + '</ul></div>' +
+      gettingHere(s) + '<div class="sec"><p class="label">' + t('focus') + '</p><ul>' + s.focus.map(function (f) { return '<li>' + (lang === 'zh' ? f[1] : f[0] + ' <span style="color:var(--muted)">' + f[1] + '</span>') + '</li>'; }).join('') + '</ul></div>' +
       '<div class="sec"><p class="label">' + t('todo') + '</p><ul class="todo">' + s.todo.map(function (q, i) {
         return '<li><label><input type="checkbox" data-i="' + i + '"' + (done[i] ? ' checked' : '') + '><span>' + L(q) + '</span></label></li>';
       }).join('') + '</ul></div>' +
@@ -446,23 +535,24 @@ textarea { width: 100%; min-height: 110px; resize: vertical; font: inherit; colo
   function applyStatic() {
     document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
     $('t-title').textContent = t('title'); $('t-sub').textContent = t('sub'); $('t-ext').textContent = t('ext'); $('t-wy').textContent = t('wy');
-    $('zreset').textContent = t('reset'); $('t-cap').textContent = t('cap'); $('t-fine').textContent = t('fine'); $('t-strip').textContent = t('strip');
+    $('zreset').textContent = t('reset'); $('t-cap').textContent = t('cap'); $('t-fine').textContent = t('fine'); $('t-strip').textContent = t('strip'); $('t-travel').textContent = t('travel'); $('t-travelfine').textContent = t('travelFine');
+    $('srcs').innerHTML = t('srcs') + ': ' + SOURCES.map(function (x) { return '<a href="' + x[1] + '" target="_blank" rel="noopener">' + x[0] + '</a>'; }).join(', ');
     $('l-en').setAttribute('aria-pressed', lang === 'en'); $('l-zh').setAttribute('aria-pressed', lang === 'zh');
     document.title = lang === 'zh' ? '弘农杨氏寻根路线' : 'Hongnong Yang Route';
-    renderChips(); renderTime(); renderStrip(); renderPanel(); draw();
+    renderChips(); renderTime(); renderStrip(); renderPanel(); renderTravel(); draw();
   }
   $('l-en').addEventListener('click', function () { lang = 'en'; save(); applyStatic(); });
   $('l-zh').addEventListener('click', function () { lang = 'zh'; save(); applyStatic(); });
   $('ext').addEventListener('change', function (e) {
     ext = e.target.checked;
     if (!ext && sel === 8) sel = 1;
-    renderStrip(); renderPanel(); draw();
+    renderStrip(); renderPanel(); renderTravel(); draw();
   });
 
   $('wy').addEventListener('change', function (e) {
     wy = e.target.checked;
     if (!wy && sel === 9) sel = 1;
-    renderStrip(); renderPanel(); draw();
+    renderStrip(); renderPanel(); renderTravel(); draw();
   });
   $('zin').addEventListener('click', function () { fly({ cx: view.cx, cy: view.cy, w: Math.max(160, view.w * 0.65) }); });
   $('zout').addEventListener('click', function () { fly({ cx: view.cx, cy: view.cy, w: Math.min(W, view.w / 0.65) }); });
