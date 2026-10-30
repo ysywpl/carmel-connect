@@ -53,7 +53,7 @@ h1 { font-family: var(--display); font-weight: 600; font-size: clamp(24px, 4vw, 
 .grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(0, 1fr); gap: 18px; align-items: start; }
 .left { display: flex; flex-direction: column; gap: 14px; min-width: 0; }
 .mapframe { position: relative; background: var(--sea); border: 1px solid var(--line); border-radius: 6px; overflow: hidden; }
-#map { display: block; width: 100%; aspect-ratio: 800 / 866; max-height: 78vh; user-select: none; }
+#map { display: block; width: 100%; aspect-ratio: 800 / 900; max-height: 78vh; user-select: none; }
 #map .hit { cursor: pointer; }
 .ctl { position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 6px; }
 .ctl button { width: 34px; height: 34px; border: 1px solid var(--line); background: var(--surface); border-radius: 6px; font-size: 18px; line-height: 1; }
@@ -138,7 +138,7 @@ label.btn { cursor: pointer; }
       </div>
     </div>
     <div class="tools">
-      <label class="check"><input type="checkbox" id="ext" checked><span id="t-ext"></span></label>
+      <label class="check"><input type="checkbox" id="gz"><span id="t-gz"></span></label>
       <label class="check"><input type="checkbox" id="wy"><span id="t-wy"></span></label>
       <div class="seg" role="group" aria-label="Language">
         <button id="l-en" aria-pressed="true">English</button>
@@ -185,101 +185,123 @@ label.btn { cursor: pointer; }
 
 <script>
 (function () {
-  var LON0 = 106, LAT0 = 37.2, SX = 50, SY = 57.7, W = 800, H = 866;
+  var LON0 = 106, LAT0 = 37.8, SX = 50, SY = 57.7, W = 800, H = 900;
   function P(lon, lat) { return [(lon - LON0) * SX, (LAT0 - lat) * SY]; }
 
+  // Generation numbers (世) follow the 达夫公系 narrative, counted from 抒公 as the first ancestor. Dates are the genealogy's own.
   var STOPS = [
     { n: 1, days: [1, 3], from: -1046, era: ['Zhou era', '周代'], en: 'Baoji and Zhouyuan', zh: '宝鸡、周原',
-      sig: ['Baoji is the base for Zhouyuan (周原), around Qishan (岐山) and Fufeng (扶风), an early Zhou homeland before the conquest of Shang, conventionally dated to about 1046 BCE. Excavated bronze vessels and inscriptions give material evidence of Zhou society.',
-            '宝鸡是游览周原的基地。周原位于岐山、扶风一带，是周人灭商之前的早期故地，通常认为灭商在约公元前1046年。出土的青铜器与铭文是周代社会的实物证据。'],
-      focus: [["Zhouyuan sites around Qishan and Fufeng", "岐山、扶风一带的周原遗址"], ["Zhouyuan Museum", "周原博物馆"], ["Baoji Bronzeware Museum", "宝鸡青铜器博物院"]],
+      sig: ['Baoji is the base for Zhouyuan (周原), around Qishan (岐山) and Fufeng (扶风), an early Zhou homeland before the conquest of Shang, conventionally dated to about 1046 BCE. Fufeng is also where the narrative says Yang Kuan (杨款, 26th generation, a Qin minister) founded a family base.',
+            '宝鸡是游览周原的基地。周原在岐山、扶风一带，是周人灭商之前的早期故地，通常认为灭商在约公元前1046年。族谱还说秦代上卿杨款（26世）在扶风开基。'],
+      focus: [["Zhouyuan sites around Qishan and Fufeng", "岐山、扶风一带的周原遗址"], ["Fufeng, where Yang Kuan is said to have founded a base", "扶风，杨款开基之地"], ["Zhouyuan Museum", "周原博物馆"], ["Baoji Bronzeware Museum", "宝鸡青铜器博物院"]],
       todo: [["Check transport and opening days for the Zhouyuan sites before fixing the day plan", "安排日程前，先核实周原各地的交通与开放时间"],
-             ["Note any bronze inscriptions or labels that mention Yang (杨 or 楊)", "记下提到杨（杨或楊）的青铜铭文或展牌"],
+             ["Ask the Fufeng local history office about Yang Kuan (杨款)", "向扶风地方志办公室询问杨款"],
              ["Keep Zhou archaeology and surname tradition in separate notes", "把周代考古与姓氏传说分开记录"]] },
     { n: 2, days: [4, 7], from: -1046, era: ['Zhou to Tang', '周至唐'], en: "Xi'an", zh: '西安',
-      sig: ["Fenghao (丰镐), the Western Zhou royal centres of Feng and Hao, lies in the Xi'an area and is distinct from the later Han and Tang Chang'an (长安), the political and cultural world of the Guanzhong heartland.",
-            '丰镐是西周的王都丰京与镐京，位于西安一带，不同于后来的汉唐长安。长安是关中腹地的政治与文化中心。'],
+      sig: ["Fenghao (丰镐), the Western Zhou royal centres of Feng and Hao, lies in the Xi'an area and is distinct from the later Han and Tang Chang'an (长安). Yang Yuling (杨于陵, 达夫公, 760 to 830, 55th generation) later held senior posts in the Tang capital, so this is also the world of your 达夫公系 ancestor.",
+            '丰镐是西周的王都丰京与镐京，位于西安一带，不同于后来的汉唐长安。杨于陵（达夫公，760至830年，55世）后来在唐都任高官，所以这里也是达夫公系始祖所处的世界。'],
       focus: [["Fenghao, a Zhou focused day", "丰镐遗址，安排一个周代主题日"], ["Han Chang'an ruins", "汉长安城遗址"], ["Tang Chang'an city site", "唐长安城遗址"], ["Daming Palace", "大明宫"],
               ["Shaanxi History Museum", "陕西历史博物馆"], ["Big Wild Goose Pagoda", "大雁塔"], ["City wall", "城墙"]],
       todo: [["Ask local archives or libraries about Yang family genealogies (杨氏族谱)", "向档案馆或图书馆查询杨氏族谱"],
-             ["Mark which Zhou, Han and Tang sites you visited, in that order", "按周、汉、唐的顺序标记走过的遗址"],
-             ["Note which sites match your family's hall name (堂号)", "记下与本家堂号相关的地点"]] },
-    { n: 3, days: [8, 9], from: -100, era: ['Han era', '汉代'], en: 'Huayin and Hongnong region', zh: '华阴、弘农一带',
-      sig: ['Eastern Shaanxi and the old Hongnong Commandery, the symbolic homeland of the Hongnong Yang clan (弘农杨氏). Yang Zhen (杨震) was from Huayin County in Hongnong. He lived long after the Zhou era origin traditions of the surname, so he is not its beginning.',
-            '陕东地区与古弘农郡，是弘农杨氏象征性的祖地。杨震出自弘农郡华阴县。他远在姓氏的周代起源传说之后，并非杨姓的开端。'],
-      focus: [["Huashan foothills", "华山脚下"], ["Huayin old town area", "华阴老城区"], ["Gazetteer and genealogy enquiries in Weinan and Huayin", "渭南、华阴地方志与族谱查询"],
-              ["Hongnong related place research in Lingbao and Sanmenxia", "灵宝、三门峡弘农相关地名考察"], ["Yellow River landscape", "黄河风光"], ["County museum, cultural bureau, archives", "县博物馆、文化局、档案馆"]],
-      todo: [["Visit the local history offices (地方志办公室) in Weinan and Huayin", "拜访渭南、华阴地方志办公室"],
-             ["Ask the Lingbao cultural bureau for Hongnong Yang research contacts", "向灵宝文化局询问弘农杨氏研究联系人"],
+             ["Look for records of Yang Yuling's posts in the capital", "查找杨于陵在京任职的记载"],
+             ["Mark which Zhou, Han and Tang sites you visited, in that order", "按周、汉、唐的顺序标记走过的遗址"]] },
+    { n: 3, days: [8, 10], from: -514, era: ['Spring and Autumn to Han', '春秋至汉'], en: 'Huayin, Xiangu and Lingbao', zh: '华阴、仙谷、灵宝',
+      sig: ['After the Jin purge of 514 BCE, Yang Shi (杨石) fled to Xiangu (仙谷), north of Huashan. The narrative calls his line "杨氏正宗", the main stream of the clan. Later Qin and Han branches moved to Henei, Fengyi (Dali) and Huo county before the Hongnong Commandery (113 BCE, seat near the old Hangu Pass city northeast of Lingbao) became the first Yang junwang (郡望). The earliest Hongnong Yang home is given as Tongxiang Xixian li (潼乡习仙里), the place of the "four generations, three dukes" tradition. Yang Zhen (杨震, 35th, 55 to 124 CE) was from Huayin. Yang Kuan (宽, 48th) served at Huazhou (华州) and his son Wen Ji (文纪, 49th) was Duke of Huashan.',
+            '公元前514年晋国之祸后，杨石逃往华山以北的仙谷，族谱称其后裔为“杨氏正宗”。秦汉时有的迁河内、冯翊（大荔），再迁霍县，其后弘农郡（前113年置，治所在灵宝东北的旧函谷关城）成为杨姓第一个郡望。弘农杨氏最早的居地记为潼乡习仙里，“四世三公”之说即出于此。杨震（35世，公元55至124年）为华阴人。杨宽（48世）任华州官员，其子文纪（49世）袭爵华山都公。'],
+      focus: [["Xiangu north of Huashan (the exact location needs local confirmation)", "华山以北的仙谷（具体位置需当地确认）"], ["Huayin old town and Yang Zhen sites", "华阴老城区与杨震遗迹"], ["Huazhou (Huaxian) and Weinan gazetteers", "华州（华县）与渭南地方志"],
+              ["Fengyi (Dali)", "冯翊（大荔）"], ["Lingbao and the old Hangu Pass area", "灵宝与旧函谷关一带"], ["Yellow River landscape, county museum, cultural bureau, archives", "黄河风光、县博物馆、文化局、档案馆"]],
+      todo: [["Visit the local history offices (地方志办公室) in Weinan, Huayin and Lingbao", "拜访渭南、华阴、灵宝地方志办公室"],
+             ["Ask where Xiangu and Tongxiang Xixian li are today", "询问仙谷与潼乡习仙里今在何处"],
              ["Ask about Yang Zhen memorials or Yang clan halls", "询问杨震纪念地或杨氏宗祠"]] },
-    { n: 4, days: [10, 12], from: -770, era: ['Eastern Zhou', '东周'], en: 'Luoyang', zh: '洛阳',
-      sig: ['Luoyi was an important Zhou centre and became the Eastern Zhou royal capital in 770 BCE. Luoyang fell in 311 CE, which opens the southward movement, and it is a Central Plains reference point for the wider northern setting.',
-            '洛邑是周代的重要中心，公元前770年成为东周王都。洛阳于公元311年陷落，由此开启南迁之势，也是中原的参照点，有助于理解北方背景。'],
+    { n: 4, days: [11, 12], from: -1062, era: ['Western Zhou tradition', '西周传说'], en: 'Hongdong and Huozhou', zh: '洪洞、霍州',
+      sig: ['The origin place named in the narrative. 抒公, the first ancestor, was enfeoffed as Marquis of Yang in the sixth year of King Kang of Zhou (given as 1062 BCE), with the fief southeast of Hongdong near Fancun (范村). 润 was re-enfeoffed in 826 BCE and 伯侨 (23rd) received the title again, hence "三封杨侯". The state suffered three disasters (the Quanrong raid of 890 BCE, the Jin purge of 514 BCE and Jin civil strife in 387 BCE) and was absorbed by Jin. Huozhou (霍县), on the middle Fen River, is where some Yangs later settled. All dates are the genealogy\'s own and were not independently checked. Hongdong is in Shanxi (山西), not Shaanxi (陕西).',
+            '族谱所述的发源地。抒公为一世祖，周康王六年（记为公元前1062年）封杨侯，封地在洪洞东南范村一带。润于公元前826年再封，伯侨（23世）又受封，故称“三封杨侯”。杨国遭三次祸变（前890年犬戎之袭、前514年晋国之祸、前387年晋国内乱），后被晋吞并。霍县在汾水中游，后来有杨氏迁居于此。所有年代均为族谱自述，未经独立核实。洪洞在山西，不是陕西。'],
+      focus: [["Fancun area southeast of Hongdong, the traditional fief", "洪洞东南范村一带，传统封地"], ["Hongdong local history office and county museum", "洪洞县地方志办公室与县博物馆"], ["Huozhou on the middle Fen River", "汾水中游的霍州"],
+              ["Heshun (和顺), another Yang Kuan base, as a side pin", "和顺，杨款另一处开基地，作为旁注"]],
+      todo: [["Ask the Hongdong local history office where Fancun and the Yang state sites are", "向洪洞地方志办公室询问范村与杨国遗址位置"],
+             ["Copy any local Yang genealogy entries on 抒公, 润 and 伯侨", "抄录当地关于抒公、润、伯侨的杨氏谱牒条目"],
+             ["Check train and road links before fixing the dates", "确定日期前先查火车与公路交通"]] },
+    { n: 5, days: [13, 15], from: -770, era: ['Eastern Zhou', '东周'], en: 'Luoyang', zh: '洛阳',
+      sig: ['Luoyi was an important Zhou centre and became the Eastern Zhou royal capital in 770 BCE. Yang Zhen died at Xiyang Pavilion (夕阳亭) near the Eastern Han capital. Yang Kuan (宽, 48th) was Duke of Yiyang (宜阳), near Luoyang, and Yang Yuling later served as Luoyang garrison commander (东都留守). Luoyang fell in 311 CE, which opens the southward movement.',
+            '洛邑是周代的重要中心，公元前770年成为东周王都。杨震在东汉都城附近的夕阳亭去世。杨宽（48世）封宜阳县公，宜阳近洛阳；杨于陵后来任东都留守。洛阳于公元311年陷落，由此开启南迁之势。'],
       focus: [["Museum of Eastern Zhou Royal Horse and Chariot Pits (天子驾六), the principal visit", "天子驾六博物馆，主要参观点"], ["Luoyang Museum", "洛阳博物馆"],
-              ["Longmen Grottoes", "龙门石窟"], ["Sui Tang Luoyang City National Heritage Park", "隋唐洛阳城国家遗址公园"]],
+              ["Longmen Grottoes", "龙门石窟"], ["Sui Tang Luoyang City National Heritage Park", "隋唐洛阳城国家遗址公园"], ["Yiyang, Guangwu and Henei as side pins", "宜阳、广武、河内，作为旁注"]],
       todo: [["Give Eastern Zhou a full day at the chariot pits and Luoyang Museum", "用整整一天看天子驾六与洛阳博物馆，让东周占有位置"],
-             ["Look for Yang surname inscriptions at Longmen", "在龙门石窟寻找杨姓题记"],
-             ["Ask the museum about tomb epitaphs (墓志) that mention Yang", "向博物馆询问提到杨氏的墓志"]] },
-    { n: 5, days: [13, 14], from: 317, era: ['Eastern Jin', '东晋'], en: 'Nanjing', zh: '南京',
-      sig: ['Ancient Jiankang (建康). Luoyang fell in 311 CE and Chang\'an in 316, ending the Western Jin. A successor Jin court was set up at Jiankang in 317, and large numbers of northern refugees settled in the south. Nanjing explains how the northern world continued in southern China. This is a proposed heritage sequence and not proof that your own ancestors stopped here.',
-            '古建康。公元311年洛阳陷落，316年长安陷落，西晋灭亡。317年晋室在建康重建朝廷，大批北方难民南迁。南京帮助理解北方世界如何在南方延续。这只是建议的寻踪顺序，并不证明你的祖先到过这里。'],
-      focus: [["Nanjing Museum, for Eastern Jin and southern dynasties material", "南京博物院，东晋与南朝文物"], ["Jiankang and Six Dynasties sites", "建康与六朝遗迹"], ["City wall and Qinhuai area", "城墙与秦淮一带"]],
+             ["Look for Yang surname inscriptions and tomb epitaphs (墓志)", "寻找杨姓题记与墓志"],
+             ["Ask where Xiyang Pavilion stood", "询问夕阳亭旧址"]] },
+    { n: 6, days: [16, 17], from: 317, era: ['Eastern Jin and Tang', '东晋与唐'], en: 'Nanjing and Jurong', zh: '南京、句容',
+      sig: ['Ancient Jiankang (建康). Luoyang fell in 311 CE and Chang\'an in 316, ending the Western Jin, and a successor court was set up at Jiankang in 317. That refugee story is a historical bridge and not a documented stop of your line. Jurong (句容) in Runzhou is different: Yang Yuling began his career there as county commandant (县尉), a short way from Nanjing.',
+            '古建康。公元311年洛阳陷落，316年长安陷落，西晋灭亡，317年晋室在建康重建朝廷。这段难民南迁史只是历史桥梁，并非你这一支有记载的驻点。润州句容则不同：杨于陵以县尉起家于此，距南京不远。'],
+      focus: [["Nanjing Museum, for Eastern Jin and southern dynasties material", "南京博物院，东晋与南朝文物"], ["Jiankang and Six Dynasties sites", "建康与六朝遗迹"], ["Jurong, Yang Yuling's first post", "句容，杨于陵的初任之地"]],
       todo: [["Write one page on how the Jin collapse links your northern and Fujian stops", "写一页说明西晋之乱如何连接北方与福建各站"],
-             ["Ask the museum about northern refugee clans (侨姓) of the Eastern Jin", "向博物馆询问东晋的侨姓士族"],
-             ["Mark in your notes that no family route is demonstrated here", "在笔记中注明此处并无家族路线的证据"]] },
-    { n: 6, days: [15, 17], from: 400, era: ['Jin tradition onward', '晋代传说起'], en: 'Quanzhou and Jinjiang', zh: '泉州、晋江',
-      sig: ['Fujian is the critical intermediate cultural and migratory zone before Chaoshan. Quanzhou\'s official overview associates settlement along the Jinjiang River with migration from the Central Plains in the late Western Jin, though this does not mean everyone travelled through Nanjing. Quanzhou is the single base here. Choose or change it after reviewing your genealogy.',
-            '福建是进入潮汕之前最关键的文化与迁徙中间地带。泉州官方概述把晋江沿岸的聚居与西晋末年中原人口南迁联系起来，但这并不表示所有人都经过南京。泉州是这里唯一的驻点，请在核对族谱后再确定或更改。'],
-      focus: [["Quanzhou and Jinjiang, for maritime, Southern Min and river settlement history", "泉州与晋江，海洋史、闽南史与江畔聚居史"], ["Putian for traditional migration narratives, as a side visit", "莆田的传统迁徙叙事，作为顺访"],
-              ["Zhangzhou for southern Fujian context, as a side visit", "漳州的闽南背景，作为顺访"]],
-      todo: [["Compare your branch's migration story with Putian narratives", "把本支迁徙说法与莆田传说对照"],
-             ["Ask Quanzhou scholars about Southern Min Yang lineages", "向泉州学者询问闽南杨氏支系"],
-             ["Record place names that also appear in Chaoshan", "记下同样出现在潮汕的地名"]] },
-    { n: 7, days: [18, 23], from: 1100, era: ['Song to Ming', '宋至明'], en: 'Chaozhou, Shantou, family village', zh: '潮州、汕头、祖村',
-      sig: ['The actual Teochew homeland, where your branch may be documented through ancestral halls, genealogy, tablets and graves. Keep substantial time here for family research.',
-            '真正的潮汕故乡，你这一支可能记录在宗祠、族谱、神主牌和坟墓之中。请在这里留出充足时间做家族研究。'],
-      focus: [["Chaozhou old city", "潮州古城"], ["Ancestral hall visits", "宗祠探访"], ["Village interviews", "村中访谈"],
-              ["Clan association", "宗亲会"], ["Shantou diaspora history", "汕头侨史"]],
+             ["Ask Jurong local archives about Yang Yuling's time as commandant", "向句容档案馆询问杨于陵任县尉的记载"],
+             ["Mark in your notes that no family route is demonstrated for the Jin period", "在笔记中注明晋代并无家族路线的证据"]] },
+    { n: 7, days: [18, 20], from: 1100, era: ['Song to Ming', '宋至明'], en: 'Putian', zh: '莆田',
+      sig: ['Putian is the Fujian origin named in the narrative. Didao (迪道公, your line) left Hantou township (涵头乡) at Wutugou (乌涂沟) in Putian county in the first year of Hongwu (1368) for Jieyang. Cuiling (翠岭公) also came from Putian in the Hongwu era, and Mingdao (明道公) from Fujian. The narrative gives no route between Yang Yuling (830) and these Ming departures, so that gap is a research task. Quanzhou and Zhangzhou are side visits only if your genealogy points there.',
+            '莆田是族谱明确记载的福建祖籍地。迪道公（你这一支）于洪武元年（1368年）从莆田县乌涂沟涵头乡入潮，卜居揭阳。翠岭公也在洪武年间从莆田入潮，明道公则记为由福建入潮。族谱没有交代杨于陵（830年）到这些明初迁出之间的路线，这一段需要另行研究。泉州、漳州只有在族谱指向时才作顺访。'],
+      focus: [["Hantou (涵头), near Wutugou, in the Hanjiang area (position approximate)", "涵头乡，乌涂沟一带，在涵江区附近（位置为大致）"], ["Putian gazetteer and Yang clan association", "莆田地方志与杨氏宗亲会"], ["Quanzhou and Zhangzhou, only if your genealogy points there", "泉州、漳州，仅当族谱指向时顺访"]],
+      todo: [["Find where Wutugou and Hantou township are today", "查明乌涂沟、涵头乡今在何处"],
+             ["Ask Putian Yang clans whether they hold a record of the 1368 departure", "询问莆田杨氏有无1368年迁出的记载"],
+             ["Record every place name that also appears in Chaoshan", "记下同样出现在潮汕的地名"]] },
+    { n: 8, days: [21, 27], from: 1368, era: ['Ming, from 1368', '明初，自1368年'], en: 'Anbu, Jieyang, Chaozhou, Shantou', zh: '庵埠、揭阳、潮州、汕头',
+      sig: ['Your line, Didao (迪道公): 1368 Pengzhou Xialing (篷州下岭乡), Jieyang. In 1458 Yao gong (耀公) moved with his brother and nephews to Datou Xilong (大头西陇) in Guanjiang du, then to Pengzhou Nanmen. In the late Ming the Dongju gong (东居公) branch moved to Mianyang village in Longxi du, then to Jiaoshan (蕉山) in Dimei du, Jieyang (the Jiaoshan line), and Cuiyang gong (萃洋公) later settled at Xilong (西陇), Longxi du. The hall 绍德堂 stands at Wenli Lutou in Anbu. Other lines: Cuiling went to Xilong, then Yanqian (砚前, 1669) and Guanli (官里, 1788, 开益斋); Mingdao went to Donglonghong, then Xilong Jimuwu (鸡母坞); Juhong came in early Jiajing to Xilong. Some lines of the text are garbled, so confirm these with the clan.',
+            '你这一支迪道公：1368年卜居揭阳篷州下岭乡。1458年耀公携弟、侄迁馆江都大头西陇，不久迁篷州南门。明末东居公一房分创于龙溪都棉洋村，后迁揭阳地美都蕉山乡（蕉山系），萃洋公后人又迁龙溪都西陇定居。绍德堂在庵埠文里路头。其他各系：翠岭公居西陇，后迁砚前（1669年）、官里（1788年，开益斋）；明道公居东陇洪，后迁西陇鸡母坞；居洪公于嘉靖初入潮，居西陇。族谱部分行文有残缺，请向宗亲核实。'],
+      focus: [["Jieyang: Pengzhou Xialing, Nanmen and Jiaoshan (Didao line)", "揭阳：篷州下岭、南门、蕉山（迪道系）"], ["Anbu: Xilong and Longxi du villages, hall 绍德堂 at Wenli Lutou", "庵埠：西陇与龙溪都各村，文里路头绍德堂"],
+              ["Yanqian and Guanli, for the Cuiling line", "砚前、官里，翠岭系"], ["Chaozhou old city", "潮州古城"], ["Shantou diaspora history", "汕头侨史"]],
       todo: [["Photograph tablets, couplets and graves with dates", "拍摄神主牌、楹联与墓碑，并记下年代"],
              ["Interview village elders and write down the generation names (字辈)", "访谈村中长辈，抄录字辈"],
              ["Meet the clan association and ask to copy the 族谱", "拜会宗亲会，请求复印族谱"],
-             ["Visit Shantou diaspora archives", "查访汕头侨史资料"]] },
-    { n: 8, days: null, opt: 'hd', from: -800, era: ['Zhou era tradition', '周代传说'], en: 'Hongdong, Shanxi', zh: '山西洪洞', optional: true,
-      sig: ['Surname reference works place an ancient Yang state here in some accounts of the origin of 楊, linked to a son of King Xuan of Zhou. Another tradition names Boqiao (伯僑), son of Duke Wu of Jin, as Marquis of Yang. These are surname origin traditions, not proof of your own descent. Hongdong is in Shanxi (山西), a different province from Shaanxi (陕西).',
-            '姓氏典籍在部分说法中把古杨国置于此地，与周宣王之子有关。另一说认为晋武公之子伯僑受封为杨侯。这些只是姓氏起源传说，并不能证明你本人的世系。洪洞在山西，与陕西是不同的省份。'],
-      focus: [["Local history office and Yang surname references", "洪洞县地方志与杨姓文献"], ["Sites tied to the ancient Yang state", "与古杨国相关的遗迹"]],
-      todo: [["Add this stop only if your genealogy names the Yang state, Boqiao or Jin ancestry", "仅当族谱提到杨国、伯僑或晋国先祖时才加入此站"],
-             ["Keep it as a side trip that does not replace research in your documented homeland", "作为顺访，不取代对有记载祖地的研究"]] },
+             ["Locate Pengzhou Xialing, Datou Xilong and Jiaoshan on a present day map", "把篷州下岭、大头西陇、蕉山对到今天的地图上"]] },
     { n: 9, days: null, opt: 'wy', from: 317, era: ['Undated corridor', '年代不详的通道'], en: 'Wuyishan, northern Fujian', zh: '福建武夷山', optional: true,
-      sig: ['A geographic bridge between Jiangxi and Fujian, where an ancient interprovincial post road survives in the border area. It helps you feel the crossing into Fujian. It adds about 2 days if you switch it on, and it is a corridor, not a demonstrated Yang migration node. The existence of the road does not show when or whether your ancestors used it.',
-            '武夷山是江西与福建之间的地理通道，边界一带仍保存着古代闽赣驿道。它让人体会进入福建的感觉。开启后约增加2天。它只是一条通道，并非已证实的杨氏迁徙节点；古道的存在也不说明你的祖先何时、是否走过。'],
+      sig: ['A geographic bridge between Jiangxi and Fujian, where an ancient interprovincial post road survives in the border area. It adds about 2 days if you switch it on, and it is a corridor, not a documented stop of your line. The existence of the road does not show when or whether your ancestors used it.',
+            '武夷山是江西与福建之间的地理通道，边界一带仍保存着古代闽赣驿道。开启后约增加2天。它只是一条通道，并非你这一支有记载的驻点；古道的存在也不说明你的祖先何时、是否走过。'],
       focus: [["Wuyi Mountain Fujian and Jiangxi ancient post road", "武夷山闽赣古驿道"], ["Border landscape between Jiangxi and Fujian", "闽赣边界的山地景观"]],
       todo: [["Add this stop only if the crossing experience matters to you", "只有在你重视入闽体验时才加入此站"],
-             ["If your genealogy names a Jiangxi place, research it instead of assuming a route", "若族谱记有江西地名，请据此研究，而不要预设路线"]] }
+             ["If your genealogy names a Jiangxi place, research it instead of assuming a route", "若族谱记有江西地名，请据此研究，而不要预设路线"]] },
+    { n: 10, days: null, opt: 'gz', from: 809, era: ['Tang, 809 to 815', '唐，809至815年'], en: 'Guangzhou, Lingnan', zh: '广州、岭南', optional: true,
+      sig: ['Yang Yuling was sent to Lingnan as military governor (岭南节度使) in 809 after clashing with the chief minister Li Jifu, and returned to the capital in 815. This is his career, not a family migration route, and the narrative links your Chaoshan line to Putian, not to Guangzhou. Add it only if Guangzhou matters to you.',
+            '杨于陵于809年因得罪宰相李吉甫，被降为岭南节度使，815年回京。这是他的仕宦经历，并非家族迁徙路线，族谱把潮汕这一支与莆田相连，而不是广州。只有在你重视广州时才加入。'],
+      focus: [["Guangzhou as the Lingnan seat in Yang Yuling's time", "杨于陵任职时的岭南治所广州"], ["Guangdong provincial archives, for Tang period records", "广东省档案馆，唐代记载"]],
+      todo: [["Add this stop only if you want to follow Yang Yuling's career", "只有想追随杨于陵的仕途时才加入此站"],
+             ["Keep it separate from the Putian to Chaoshan migration in your notes", "在笔记中与莆田到潮汕的迁徙分开记录"]] }
   ];
 
-  // lab: [dx, dy, anchor] in screen units; main = stop marker label (0 for plain pins)
+  // lab: [dx, dy, anchor] in screen units; main = stop marker label (0 for plain pins); didao marks the route of your line
   var NODES = [
     { id: 'baoji', s: 1, lon: 107.24, lat: 34.36, en: 'Baoji', zh: '宝鸡', main: 1, lab: [0, 27, 'middle'] },
-    { id: 'zhouyuan', s: 1, lon: 107.70, lat: 34.45, en: 'Zhouyuan', zh: '周原', main: 0, lab: [7, -9, 'start'], always: true },
+    { id: 'zhouyuan', s: 1, lon: 107.65, lat: 34.47, en: 'Zhouyuan', zh: '周原', main: 0, lab: [7, -9, 'start'], always: true },
+    { id: 'fufeng', s: 1, lon: 107.95, lat: 34.35, en: 'Fufeng', zh: '扶风', main: 0, lab: [0, 15, 'middle'], offroute: true },
     { id: 'fenghao', s: 2, lon: 108.62, lat: 34.20, en: 'Fenghao', zh: '丰镐', main: 0, lab: [-8, 14, 'end'] },
     { id: 'xian', s: 2, lon: 108.95, lat: 34.27, en: "Xi'an", zh: '西安', main: 2, lab: [4, 27, 'middle'] },
     { id: 'weinan', s: 3, lon: 109.51, lat: 34.50, en: 'Weinan', zh: '渭南', main: 0, lab: [0, 15, 'middle'] },
+    { id: 'huazhou', s: 3, lon: 109.76, lat: 34.51, en: 'Huazhou', zh: '华州', main: 0, lab: [0, 15, 'middle'], offroute: true },
+    { id: 'fengyi', s: 3, lon: 109.94, lat: 34.80, en: 'Fengyi', zh: '冯翊', main: 0, lab: [-8, -4, 'end'], offroute: true },
+    { id: 'xiangu', s: 3, lon: 109.95, lat: 34.47, en: 'Xiangu (approx.)', zh: '仙谷', main: 0, lab: [-8, 14, 'end'], offroute: true },
     { id: 'huayin', s: 3, lon: 110.09, lat: 34.57, en: 'Huayin', zh: '华阴', main: 3, lab: [0, -18, 'middle'] },
     { id: 'lingbao', s: 3, lon: 110.89, lat: 34.52, en: 'Lingbao', zh: '灵宝', main: 0, lab: [0, 15, 'middle'] },
     { id: 'sanmenxia', s: 3, lon: 111.20, lat: 34.77, en: 'Sanmenxia', zh: '三门峡', main: 0, lab: [8, -6, 'start'] },
-    { id: 'luoyang', s: 4, lon: 112.45, lat: 34.62, en: 'Luoyang', zh: '洛阳', main: 4, lab: [0, -18, 'middle'] },
-    { id: 'nanjing', s: 5, lon: 118.80, lat: 32.06, en: 'Nanjing', zh: '南京', main: 5, lab: [17, 4, 'start'] },
+    { id: 'hongdong', s: 4, lon: 111.67, lat: 36.25, en: 'Hongdong', zh: '洪洞', main: 4, lab: [0, -18, 'middle'] },
+    { id: 'huozhou', s: 4, lon: 111.72, lat: 36.57, en: 'Huozhou', zh: '霍州', main: 0, lab: [9, -4, 'start'], offroute: true },
+    { id: 'heshun', s: 4, lon: 113.57, lat: 37.33, en: 'Heshun', zh: '和顺', main: 0, lab: [9, 4, 'start'], offroute: true },
+    { id: 'luoyang', s: 5, lon: 112.45, lat: 34.62, en: 'Luoyang', zh: '洛阳', main: 5, lab: [0, -18, 'middle'] },
+    { id: 'yiyang', s: 5, lon: 112.16, lat: 34.52, en: 'Yiyang', zh: '宜阳', main: 0, lab: [-8, 14, 'end'], offroute: true },
+    { id: 'guangwu', s: 5, lon: 113.38, lat: 34.85, en: 'Guangwu', zh: '广武', main: 0, lab: [9, 4, 'start'], offroute: true },
+    { id: 'henei', s: 5, lon: 113.07, lat: 35.19, en: 'Henei', zh: '河内', main: 0, lab: [9, 4, 'start'], offroute: true },
+    { id: 'nanjing', s: 6, lon: 118.80, lat: 32.06, en: 'Nanjing', zh: '南京', main: 6, lab: [-17, 4, 'end'] },
+    { id: 'jurong', s: 6, lon: 119.17, lat: 31.95, en: 'Jurong', zh: '句容', main: 0, lab: [9, 12, 'start'], offroute: true },
     { id: 'wuyishan', s: 9, lon: 118.03, lat: 27.75, en: 'Wuyishan', zh: '武夷山', main: 'W', lab: [17, 4, 'start'] },
-    { id: 'putian', s: 6, lon: 119.01, lat: 25.43, en: 'Putian', zh: '莆田', main: 0, lab: [-8, 4, 'end'], offroute: true },
-    { id: 'quanzhou', s: 6, lon: 118.68, lat: 24.87, en: 'Quanzhou', zh: '泉州', main: 6, lab: [17, 4, 'start'] },
-    { id: 'zhangzhou', s: 6, lon: 117.65, lat: 24.51, en: 'Zhangzhou', zh: '漳州', main: 0, lab: [0, 17, 'middle'], offroute: true },
-    { id: 'chaozhou', s: 7, lon: 116.62, lat: 23.66, en: 'Chaozhou', zh: '潮州', main: 7, lab: [-17, 4, 'end'] },
-    { id: 'shantou', s: 7, lon: 116.68, lat: 23.35, en: 'Shantou', zh: '汕头', main: 0, lab: [9, 12, 'start'] },
-    { id: 'hongdong', s: 8, lon: 111.67, lat: 36.25, en: 'Hongdong', zh: '洪洞', main: 'H', lab: [0, -18, 'middle'] }
+    { id: 'putian', s: 7, lon: 119.01, lat: 25.43, en: 'Putian', zh: '莆田', main: 7, lab: [17, 4, 'start'], didao: true },
+    { id: 'hantou', s: 7, lon: 119.12, lat: 25.48, en: 'Hantou (approx.)', zh: '涵头', main: 0, lab: [9, -6, 'start'], offroute: true },
+    { id: 'quanzhou', s: 7, lon: 118.68, lat: 24.87, en: 'Quanzhou', zh: '泉州', main: 0, lab: [-8, 4, 'end'], offroute: true },
+    { id: 'zhangzhou', s: 7, lon: 117.65, lat: 24.51, en: 'Zhangzhou', zh: '漳州', main: 0, lab: [0, 17, 'middle'], offroute: true },
+    { id: 'jieyang', s: 8, lon: 116.37, lat: 23.55, en: 'Jieyang', zh: '揭阳', main: 0, lab: [-8, 4, 'end'], didao: true },
+    { id: 'anbu', s: 8, lon: 116.70, lat: 23.47, en: 'Anbu', zh: '庵埠', main: 8, lab: [17, 4, 'start'], didao: true },
+    { id: 'chaozhou', s: 8, lon: 116.62, lat: 23.66, en: 'Chaozhou', zh: '潮州', main: 0, lab: [9, -6, 'start'], offroute: true },
+    { id: 'shantou', s: 8, lon: 116.68, lat: 23.35, en: 'Shantou', zh: '汕头', main: 0, lab: [9, 14, 'start'], offroute: true },
+    { id: 'guangzhou', s: 10, lon: 113.26, lat: 23.13, en: 'Guangzhou', zh: '广州', main: 'G', lab: [0, 27, 'middle'] }
   ];
-  var ROUTE = ['baoji', 'zhouyuan', 'fenghao', 'xian', 'weinan', 'huayin', 'lingbao', 'sanmenxia', 'luoyang', 'nanjing', 'wuyishan', 'quanzhou', 'chaozhou', 'shantou'];
-  var SPURS = [['sanmenxia', 'hongdong']];
+  var ROUTE = ['baoji', 'zhouyuan', 'fenghao', 'xian', 'weinan', 'huayin', 'lingbao', 'sanmenxia', 'hongdong', 'luoyang', 'nanjing', 'wuyishan', 'putian', 'jieyang', 'anbu'];
+  var SPURS = [['anbu', 'guangzhou']];
   var byId = {}; NODES.forEach(function (n) { n.p = P(n.lon, n.lat); byId[n.id] = n; });
 
   var COAST = [[100,40],[118.5,40],[118.0,38.3],[118.8,37.5],[119.0,37.2],[120.3,37.1],[121.5,37.5],[122.5,37.4],[122.2,36.8],[120.7,36.1],[119.5,35.3],[119.2,34.7],
@@ -293,23 +315,25 @@ label.btn { cursor: pointer; }
   }
 
   // Travel legs between stop anchors. conf: sourced (found in web sources, may be dated), estimate (my own), unchecked.
-  var ANCHOR = { 1: 'baoji', 2: 'xian', 3: 'huayin', 4: 'luoyang', 5: 'nanjing', 6: 'quanzhou', 7: 'chaozhou', 8: 'hongdong', 9: 'wuyishan' };
+  var ANCHOR = { 1: 'baoji', 2: 'xian', 3: 'huayin', 4: 'hongdong', 5: 'luoyang', 6: 'nanjing', 7: 'putian', 8: 'anbu', 9: 'wuyishan', 10: 'guangzhou' };
   var LEGS = {
     '1-2': { conf: 'sourced', mode: ['High speed train, Baoji South to Xi\'an North, about 138 km of track', '高铁，宝鸡南至西安北，线路约138公里'], time: ['About 50 to 60 min', '约50至60分钟'],
-      note: ['The train times do not cover getting from Baoji to the Zhouyuan sites. Check local bus or car hire for those.', '火车时间不含从宝鸡前往周原各地，请另查当地公交或租车。']},
+      note: ['The train times do not cover getting from Baoji to the Zhouyuan and Fufeng sites. Check local bus or car hire for those.', '火车时间不含从宝鸡前往周原、扶风各地，请另查当地公交或租车。']},
     '2-3': { conf: 'sourced', mode: ['High speed train, Xi\'an North to Huashan North (Huayin), about 121 km', '高铁，西安北至华山北（华阴），约121公里'], time: ['About 30 min (28 to 35 min on sampled trains)', '约30分钟（抽样车次28至35分钟）'],
-      note: ['Huashan North is in Huayin, Weinan.', '华山北站位于渭南华阴。']},
-    '3-4': { conf: 'estimate', mode: ['High speed train on the Zhengzhou to Xi\'an line, Huashan North to Luoyang Longmen', '郑西高铁，华山北至洛阳龙门'], time: ['About 1 hour (my estimate)', '约1小时（我的估算）'],
-      note: ['For comparison, Xi\'an to Luoyang is 360 to 380 km and takes 1.5 to 2 hours. Lingbao and Sanmenxia are not checked.', '作为参照，西安到洛阳为360至380公里，需1.5至2小时。灵宝与三门峡尚未核实。']},
-    '4-5': { conf: 'sourced', mode: ['High speed train, Luoyang Longmen to Nanjing South, about 834 km', '高铁，洛阳龙门至南京南，约834公里'], time: ['About 4h05 to 5h15 on sampled 2023 trains', '2023年抽样车次约4小时05分至5小时15分'],
+      note: ['Huashan North is in Huayin, Weinan. Lingbao and Sanmenxia are not checked.', '华山北站位于渭南华阴。灵宝与三门峡尚未核实。']},
+    '3-4': { conf: 'unchecked', mode: ['Train or road from the Huayin and Lingbao area into Shanxi', '火车或公路，由华阴、灵宝一带入山西'], time: ['Not checked', '未核实'],
+      note: ['Hongdong is in a different province. Check 12306 and local transport, and plan the route through Yuncheng or Linfen.', '洪洞在另一个省份。请查12306与当地交通，并考虑经运城或临汾。']},
+    '4-5': { conf: 'unchecked', mode: ['Train from the Hongdong area to Luoyang', '火车，由洪洞一带至洛阳'], time: ['Not checked', '未核实'],
+      note: ['Check 12306 for direct and connecting trains.', '请在12306查询直达与中转车次。']},
+    '5-6': { conf: 'sourced', mode: ['High speed train, Luoyang Longmen to Nanjing South, about 834 km', '高铁，洛阳龙门至南京南，约834公里'], time: ['About 4h05 to 5h15 on sampled 2023 trains', '2023年抽样车次约4小时05分至5小时15分'],
       note: ['Schedules are from 2023, so check current times.', '时刻表来自2023年，请核对最新班次。']},
-    '5-6': { conf: 'unchecked', mode: ['Train, probably with a change', '火车，可能需要换乘'], time: ['One aggregator site shows about 9 hours, once daily. Not verified.', '某聚合网站显示约9小时，每日一班，未核实。'],
+    '6-7': { conf: 'unchecked', mode: ['Train, probably with a change (for example via Fuzhou)', '火车，可能需要换乘（例如经福州）'], time: ['Not checked. One aggregator site showed about 9 hours to Quanzhou. Not verified.', '未核实。某聚合网站显示至泉州约9小时，未经核实。'],
       note: ['Plan this as a full travel day and check 12306 before fixing the dates.', '请按整天行程安排，确定日期前先查12306。']},
-    '5-9': { conf: 'unchecked', mode: ['Train to Wuyishan East', '火车至武夷山东'], time: ['Not checked', '未核实'], note: ['Check 12306 for direct and connecting trains.', '请在12306查询直达与中转车次。']},
-    '9-6': { conf: 'unchecked', mode: ['Train from Wuyishan East to Quanzhou', '火车，武夷山东至泉州'], time: ['Not checked', '未核实'], note: ['Check 12306 for direct and connecting trains.', '请在12306查询直达与中转车次。']},
-    '6-7': { conf: 'estimate', mode: ['High speed train on the Xiamen to Shenzhen line, Quanzhou to Chaoshan station', '厦深高铁，泉州至潮汕站'], time: ['About 1.5 to 2 hours (my estimate)', '约1.5至2小时（我的估算）'],
-      note: ['Chaoshan station is a stop on trains between Shenzhen and Quanzhou. Chaozhou to Shantou is a short local trip that I did not check.', '潮汕站是深圳至泉州列车的停靠站。潮州至汕头为短途本地行程，未核实。']},
-    '3-8': { conf: 'unchecked', mode: ['Train or road into Shanxi', '火车或公路前往山西'], time: ['Not checked', '未核实'], note: ['Hongdong is in a different province. Check 12306 and local transport.', '洪洞在另一个省份，请查12306与当地交通。']}
+    '6-9': { conf: 'unchecked', mode: ['Train to Wuyishan East', '火车至武夷山东'], time: ['Not checked', '未核实'], note: ['Check 12306 for direct and connecting trains.', '请在12306查询直达与中转车次。']},
+    '9-7': { conf: 'unchecked', mode: ['Train from Wuyishan East to Putian', '火车，武夷山东至莆田'], time: ['Not checked', '未核实'], note: ['Check 12306 for direct and connecting trains.', '请在12306查询直达与中转车次。']},
+    '7-8': { conf: 'estimate', mode: ['High speed train via the Xiamen to Shenzhen line to Chaoshan station, then road to Jieyang and Anbu', '高铁经厦深线至潮汕站，再转公路前往揭阳、庵埠'], time: ['About 2 to 3 hours to Chaoshan station (my estimate)', '至潮汕站约2至3小时（我的估算）'],
+      note: ['Chaoshan station is a stop on trains between Shenzhen and Quanzhou. Local legs to Jieyang, Anbu, Chaozhou and Shantou are short and were not checked.', '潮汕站是深圳至泉州列车的停靠站。前往揭阳、庵埠、潮州、汕头的本地路段很短，未核实。']},
+    '8-10': { conf: 'unchecked', mode: ['Train from Chaoshan to Guangzhou', '火车，由潮汕至广州'], time: ['Not checked', '未核实'], note: ['Optional side trip. Check 12306.', '可选的顺访，请查12306。']}
   };
   var CONF = { sourced: ['From sources, may be dated', '来自资料，可能已过时'], estimate: ['My estimate', '我的估算'], unchecked: ['Not checked', '未核实'] };
   var SOURCES = [
@@ -325,8 +349,8 @@ label.btn { cursor: pointer; }
     return Math.round(2 * R * Math.asin(Math.sqrt(h)) / 10) * 10;
   }
   function activeLegs() {
-    var l = wy ? [[1, 2], [2, 3], [3, 4], [4, 5], [5, 9], [9, 6], [6, 7]] : [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7]];
-    if (ext) l.push([3, 8]);
+    var l = wy ? [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 9], [9, 7], [7, 8]] : [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 7], [7, 8]];
+    if (gz) l.push([8, 10]);
     return l.map(function (p) { return { a: p[0], b: p[1], km: legKm(p[0], p[1]), d: LEGS[p[0] + '-' + p[1]] }; });
   }
 
@@ -335,12 +359,12 @@ label.btn { cursor: pointer; }
     [220, 265, 'Three Kingdoms', '三国'], [265, 317, 'Western Jin', '西晋'], [317, 420, 'Eastern Jin', '东晋'], [420, 581, 'Northern and Southern Dynasties', '南北朝'], [581, 618, 'Sui', '隋'], [618, 907, 'Tang', '唐'],
     [907, 960, 'Five Dynasties', '五代'], [960, 1279, 'Song', '宋'], [1279, 1368, 'Yuan', '元'], [1368, 9999, 'Ming', '明']
   ];
-  var CHIPS = [[-1000, 'Western Zhou', '西周'], [-500, 'Eastern Zhou', '东周'], [100, 'Han', '汉'], [330, 'Eastern Jin', '东晋'], [750, 'Sui and Tang', '隋唐'], [1100, 'Song', '宋'], [1500, 'Ming', '明'], [1650, 'Full route', '全程']];
+  var CHIPS = [[-1000, 'Western Zhou', '西周'], [-500, 'Eastern Zhou', '东周'], [100, 'Han', '汉'], [330, 'Eastern Jin', '东晋'], [750, 'Sui and Tang', '隋唐'], [1100, 'Song', '宋'], [1370, 'Ming arrival', '明初入潮'], [1650, 'Full route', '全程']];
 
   var T = {
     en: {
-      title: 'Hongnong Yang Route', sub: 'Baoji to Chaoshan in 23 days. From the Zhou homeland to the Teochew village, along the 弘農楊氏 line.',
-      ext: 'Include Hongdong extension', wy: 'Include Wuyishan extension (adds about 2 days)', reset: 'Reset', cap: 'Schematic map, not to scale. Arrows show the traditional direction of movement, not a surveyed road. Labels on the arrows are straight line distances.',
+      title: 'Hongnong Yang Route', sub: 'Baoji to Chaoshan in 27 days, following the 达夫公系. From the Zhou homeland to the Teochew village, along the 弘農楊氏 line.',
+      gz: 'Include Guangzhou extension (Yang Yuling in Lingnan)', wy: 'Include Wuyishan extension (adds about 2 days)', reset: 'Reset', cap: 'Schematic map, not to scale. Arrows show the traditional direction of movement, not a surveyed road. Labels on the arrows are straight line distances. The red arrows follow your line, Didao (迪道公).',
       fine: 'All dates are traditional and approximate, and surname traditions do not prove your own descent. Check each one against your 族谱. The day plan is a proposed allocation, not a checked transport schedule.',
       strip: 'Day by day', travel: 'Distance and travel by train', getting: 'Getting here', line: 'Straight line', by: 'By train', startNote: 'Start of the route. Your arrival from home is not covered here.', total: 'Total straight line', legFrom: 'Leg', km: 'km',
       travelFine: 'Straight line distances are measured on the map between stop anchors, not along the track. Train times are indicative. Check 12306 or a booking site close to your date.', srcs: 'Sources used', sig: 'Genealogical significance', focus: 'Suggested sites and focus', todo: 'Research to do', notes: 'My notes',
@@ -348,8 +372,8 @@ label.btn { cursor: pointer; }
       from: 'Traditional link from', optional: 'Optional extension', yrCE: 'CE', yrBCE: 'BCE', d: 'd', approx: 'c.'
     },
     zh: {
-      title: '弘农杨氏寻根路线', sub: '二十三天，从宝鸡到潮汕，由周人故地一路寻到潮汕祖村，沿弘农杨氏之线。',
-      ext: '纳入洪洞一站', wy: '纳入武夷山一站（约增加2天）', reset: '复位', cap: '示意图，不按比例。箭头表示传统上的迁徙方向，并非实测道路。箭头上的数字为直线距离。',
+      title: '弘农杨氏寻根路线', sub: '二十七天，从宝鸡到潮汕，沿达夫公系，由周人故地一路寻到潮汕祖村，沿弘农杨氏之线。',
+      gz: '纳入广州一站（杨于陵任职岭南）', wy: '纳入武夷山一站（约增加2天）', reset: '复位', cap: '示意图，不按比例。箭头表示传统上的迁徙方向，并非实测道路。箭头上的数字为直线距离。红色箭头为你这一支迪道公的路线。',
       fine: '所有年代均为传统说法，仅作大致参考，姓氏传说也不能证明你本人的世系，请以自家族谱为准。日程只是建议的时间分配，尚未核对交通班次。',
       strip: '逐日行程', travel: '距离与火车出行', getting: '如何抵达', line: '直线距离', by: '乘火车', startNote: '路线起点，从家出发的行程不在此列。', total: '直线距离合计', legFrom: '路段', km: '公里',
       travelFine: '直线距离按地图上各站锚点测量，并非沿铁路实际里程。火车时间仅供参考，请临近日期时在12306或订票网站核实。', srcs: '参考资料', sig: '家谱意义', focus: '建议考察地点与重点', todo: '待办研究', notes: '我的笔记',
@@ -358,7 +382,7 @@ label.btn { cursor: pointer; }
     }
   };
 
-  var lang = 'en', year = 1650, ext = true, wy = false, sel = 1, view = { cx: W / 2, cy: H / 2, w: W }, raf = 0;
+  var lang = 'en', year = 1650, gz = false, wy = false, sel = 1, view = { cx: W / 2, cy: H / 2, w: W }, raf = 0;
   var store = { notes: {}, done: {}, lang: 'en' };
   var KEY = 'hongnong-yang-route-v1';
   try { var raw = localStorage.getItem(KEY); if (raw) { var o = JSON.parse(raw); store.notes = o.notes || {}; store.done = o.done || {}; if (o.lang) lang = o.lang; } } catch (e) {}
@@ -370,7 +394,7 @@ label.btn { cursor: pointer; }
   function t(k) { return T[lang][k]; }
   function L(pair) { return lang === 'zh' ? pair[1] : pair[0]; }
   function stopOf(n) { return STOPS[n - 1]; }
-  function stopEnabled(s) { return !s.optional || (s.opt === 'hd' ? ext : wy); }
+  function stopEnabled(s) { return !s.optional || (s.opt === 'gz' ? gz : wy); }
   function stopVisible(s) { return stopEnabled(s) && year >= s.from; }
   function nodeShown(nd) { return stopEnabled(stopOf(nd.s)); }
   function nodeActive(nd) { return stopVisible(stopOf(nd.s)); }
@@ -395,12 +419,12 @@ label.btn { cursor: pointer; }
     var south = lang === 'zh' ? '南海' : 'South China Sea', east = lang === 'zh' ? '东海' : 'East China Sea';
     return tx(110.9, 36.0, yellow, 11) + tx(112.6, 30.4, yang, 11) + tx(108.2, 34.65, wei, 9.5) + tx(117.8, 22.7, south, 11) + tx(121.4, 28.3, east, 11);
   }
-  function arrow(a, b, kk, dashed, active, noHead) {
+  function arrow(a, b, kk, dashed, active, noHead, accent) {
     var dx = b.p[0] - a.p[0], dy = b.p[1] - a.p[1], d = Math.sqrt(dx * dx + dy * dy), ux = dx / d, uy = dy / d;
     var ra = (a.main ? 12 : 5) * kk + 2 * kk, rb = (b.main ? 12 : 5) * kk + 3 * kk;
     if (d < ra + rb + 6 * kk) return '';
     var x1 = a.p[0] + ux * ra, y1 = a.p[1] + uy * ra, x2 = b.p[0] - ux * rb, y2 = b.p[1] - uy * rb;
-    var col = active ? 'var(--route)' : 'var(--muted)', op = active ? 1 : 0.35, sw = (active ? 2.4 : 1.4) * kk;
+    var col = active ? (accent ? 'var(--accent)' : 'var(--route)') : 'var(--muted)', op = active ? 1 : 0.35, sw = (active ? 2.4 : 1.4) * kk;
     var s = 8 * kk, px = -uy, py = ux;
     var head = active && !noHead ? '<polygon points="' + x2 + ',' + y2 + ' ' + (x2 - ux * s + px * s * 0.5) + ',' + (y2 - uy * s + py * s * 0.5) + ' ' + (x2 - ux * s - px * s * 0.5) + ',' + (y2 - uy * s - py * s * 0.5) + '" fill="' + col + '"/>' : '';
     return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + col + '" stroke-width="' + sw + '" opacity="' + op + '"' +
@@ -413,11 +437,11 @@ label.btn { cursor: pointer; }
     var out = '<g font-family="var(--body)">' + base() + geoLabels(kk);
     for (var i = 0; i < list.length - 1; i++) {
       var a = list[i], b = list[i + 1];
-      out += arrow(a, b, kk, a.s === 9 || b.s === 9, nodeActive(a) && nodeActive(b));
+      out += arrow(a, b, kk, a.s === 9 || b.s === 9, nodeActive(a) && nodeActive(b), false, a.didao && b.didao);
     }
     SPURS.forEach(function (pr) { var a = byId[pr[0]], b = byId[pr[1]]; if (nodeShown(b)) out += arrow(a, b, kk, true, nodeActive(b), true); });
     activeLegs().forEach(function (x) {
-      if (x.b === 8) return;
+      if (x.b === 10) return;
       var a = byId[ANCHOR[x.a]], b = byId[ANCHOR[x.b]];
       if (!stopVisible(stopOf(x.a)) || !stopVisible(stopOf(x.b))) return;
       var dx = b.p[0] - a.p[0], dy = b.p[1] - a.p[1], dd = Math.sqrt(dx * dx + dy * dy);
@@ -598,7 +622,7 @@ label.btn { cursor: pointer; }
   function renderTravel() {
     var legs = activeLegs(), sum = 0;
     var rows = legs.map(function (x) {
-      if (x.b !== 8) sum += x.km;
+      if (x.b !== 10) sum += x.km;
       return '<tr><td>' + legName(x.a) + ' → ' + legName(x.b) + '</td><td class="n">' + x.km + ' ' + t('km') + '</td><td>' + L(x.d.time) + '</td><td><span class="pill ' + x.d.conf + '">' + L(CONF[x.d.conf]) + '</span></td></tr>';
     }).join('');
     $('travel').innerHTML = '<thead><tr><th>' + t('legFrom') + '</th><th>' + t('line') + '</th><th>' + t('by') + '</th><th></th></tr></thead><tbody>' + rows +
@@ -607,7 +631,7 @@ label.btn { cursor: pointer; }
 
   function renderPanel() {
     var s = stopOf(sel), done = store.done[s.n] || {};
-    var html = '<div class="phead"><div class="badge">' + (s.n === 8 ? 'H' : s.n === 9 ? 'W' : s.n) + '</div><div><h2>' + stopName(s) + (lang === 'en' ? ' <span style="font-family:var(--serif-zh);font-size:18px;color:var(--muted)">' + s.zh + '</span>' : '') + '</h2>' +
+    var html = '<div class="phead"><div class="badge">' + (s.n === 9 ? 'W' : s.n === 10 ? 'G' : s.n) + '</div><div><h2>' + stopName(s) + (lang === 'en' ? ' <span style="font-family:var(--serif-zh);font-size:18px;color:var(--muted)">' + s.zh + '</span>' : '') + '</h2>' +
       '<div class="days">' + dayText(s) + '</div><span class="tag">' + t('from') + ': ' + L(s.era) + '</span></div></div>' +
       '<div class="sec"><p class="label">' + t('sig') + '</p><p>' + L(s.sig) + '</p></div>' +
       gettingHere(s) + '<div class="sec"><p class="label">' + t('focus') + '</p><ul>' + s.focus.map(function (f) { return '<li>' + (lang === 'zh' ? f[1] : f[0] + ' <span style="color:var(--muted)">' + f[1] + '</span>') + '</li>'; }).join('') + '</ul></div>' +
@@ -655,7 +679,7 @@ label.btn { cursor: pointer; }
 
   function applyStatic() {
     document.documentElement.lang = lang === 'zh' ? 'zh-Hans' : 'en';
-    $('t-title').textContent = t('title'); $('t-sub').textContent = t('sub'); $('t-ext').textContent = t('ext'); $('t-wy').textContent = t('wy');
+    $('t-title').textContent = t('title'); $('t-sub').textContent = t('sub'); $('t-gz').textContent = t('gz'); $('t-wy').textContent = t('wy');
     $('zreset').textContent = t('reset'); $('t-cap').textContent = t('cap'); $('t-fine').textContent = t('fine'); $('t-strip').textContent = t('strip'); $('t-travel').textContent = t('travel'); $('t-travelfine').textContent = t('travelFine');
     $('srcs').innerHTML = t('srcs') + ': ' + SOURCES.map(function (x) { return '<a href="' + x[1] + '" target="_blank" rel="noopener">' + x[0] + '</a>'; }).join(', ');
     $('l-en').setAttribute('aria-pressed', lang === 'en'); $('l-zh').setAttribute('aria-pressed', lang === 'zh');
@@ -664,9 +688,9 @@ label.btn { cursor: pointer; }
   }
   $('l-en').addEventListener('click', function () { lang = 'en'; save(); applyStatic(); });
   $('l-zh').addEventListener('click', function () { lang = 'zh'; save(); applyStatic(); });
-  $('ext').addEventListener('change', function (e) {
-    ext = e.target.checked;
-    if (!ext && sel === 8) sel = 1;
+  $('gz').addEventListener('change', function (e) {
+    gz = e.target.checked;
+    if (!gz && sel === 10) sel = 1;
     renderStrip(); renderPanel(); renderTravel(); draw();
   });
 
