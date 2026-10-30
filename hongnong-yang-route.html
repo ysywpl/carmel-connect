@@ -109,6 +109,18 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
 .pill.estimate { border-color: var(--accent); color: var(--accent); }
 .leg { display: flex; flex-direction: column; gap: 3px; font-size: 14px; }
 .fine a { color: var(--route); }
+textarea.small { min-height: 64px; }
+.photos { display: grid; grid-template-columns: repeat(auto-fill, minmax(84px, 1fr)); gap: 6px; margin-top: 8px; }
+.photos:empty { display: none; }
+.ph { position: relative; aspect-ratio: 1; }
+.ph img { width: 100%; height: 100%; object-fit: cover; border-radius: 4px; border: 1px solid var(--line); cursor: zoom-in; display: block; }
+.ph .x { position: absolute; top: 3px; right: 3px; width: 24px; height: 24px; border-radius: 50%; border: 0; background: var(--ink); color: var(--bg); line-height: 1; font-size: 14px; }
+label.btn { cursor: pointer; }
+.lightbox { position: fixed; inset: 0; z-index: 50; background: rgba(8, 14, 15, 0.88); display: grid; place-items: center;
+  padding-block: max(16px, env(safe-area-inset-top, 0px)) max(16px, env(safe-area-inset-bottom, 0px)); padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+.lightbox[hidden], label.btn[hidden] { display: none; }
+.lightbox img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.lbx { position: absolute; top: max(12px, env(safe-area-inset-top, 0px)); right: max(12px, env(safe-area-inset-right, 0px)); width: 40px; height: 40px; border-radius: 50%; border: 0; background: #fff; color: #111; font-size: 22px; }
 @media (max-width: 920px) {
   .grid { grid-template-columns: minmax(0, 1fr); }
   .panel { position: static; }
@@ -332,7 +344,7 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
       fine: 'All dates are traditional and approximate, and surname traditions do not prove your own descent. Check each one against your 族谱. The day plan is a proposed allocation, not a checked transport schedule.',
       strip: 'Day by day', travel: 'Distance and travel by train', getting: 'Getting here', line: 'Straight line', by: 'By train', startNote: 'Start of the route. Your arrival from home is not covered here.', total: 'Total straight line', legFrom: 'Leg', km: 'km',
       travelFine: 'Straight line distances are measured on the map between stop anchors, not along the track. Train times are indicative. Check 12306 or a booking site close to your date.', srcs: 'Sources used', sig: 'Genealogical significance', focus: 'Suggested sites and focus', todo: 'Research to do', notes: 'My notes',
-      notesPh: 'What you found, who you met, names and dates.', copy: 'Copy my notes', saved: 'Saved in this browser only.', copied: 'Copied.',
+      notesPh: 'What you found, who you met, names and dates.', copy: 'Copy my notes', saved: 'Saved in this browser only. Pictures need shared storage.', savedShared: 'Notes and pictures are shared. Ticks stay in this browser.', saving: 'Saving...', addPic: 'Add pictures', legNotes: 'Estimate notes and pictures', legPh: 'Ticket screenshots, timetable photos, price or timing notes.', uploading: 'Uploading', remove: 'Remove picture', confirmRemove: 'Tap again to remove this picture.', errFull: 'Shared storage is full.', errType: 'That picture format is not supported. Use JPEG or PNG.', errBig: 'That picture is too large.', errGeneric: 'Could not save. Check your connection and try again.', copied: 'Copied.',
       from: 'Traditional link from', optional: 'Optional extension', yrCE: 'CE', yrBCE: 'BCE', d: 'd', approx: 'c.'
     },
     zh: {
@@ -341,7 +353,7 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
       fine: '所有年代均为传统说法，仅作大致参考，姓氏传说也不能证明你本人的世系，请以自家族谱为准。日程只是建议的时间分配，尚未核对交通班次。',
       strip: '逐日行程', travel: '距离与火车出行', getting: '如何抵达', line: '直线距离', by: '乘火车', startNote: '路线起点，从家出发的行程不在此列。', total: '直线距离合计', legFrom: '路段', km: '公里',
       travelFine: '直线距离按地图上各站锚点测量，并非沿铁路实际里程。火车时间仅供参考，请临近日期时在12306或订票网站核实。', srcs: '参考资料', sig: '家谱意义', focus: '建议考察地点与重点', todo: '待办研究', notes: '我的笔记',
-      notesPh: '记下发现、见过的人、姓名与年代。', copy: '复制我的笔记', saved: '仅保存在本浏览器。', copied: '已复制。',
+      notesPh: '记下发现、见过的人、姓名与年代。', copy: '复制我的笔记', saved: '仅保存在本浏览器，图片需要共享存储。', savedShared: '笔记与图片已共享，勾选项仍只保存在本浏览器。', saving: '保存中...', addPic: '添加图片', legNotes: '预估的笔记与图片', legPh: '车票截图、时刻表照片、价格或时间备注。', uploading: '上传中', remove: '删除图片', confirmRemove: '再点一次即可删除此图片。', errFull: '共享存储已满。', errType: '不支持该图片格式，请使用JPEG或PNG。', errBig: '图片太大。', errGeneric: '保存失败，请检查网络后重试。', copied: '已复制。',
       from: '传统上始于', optional: '可选延伸', yrCE: '年', yrBCE: '年', d: '天', approx: '约'
     }
   };
@@ -464,6 +476,111 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
   }
   $('strip').addEventListener('click', function (e) { var b = e.target.closest('button[data-n]'); if (b && !b.disabled) select(+b.dataset.n); });
 
+  // Shared notes and pictures: db docs at notes/<key> hold {text, photos:[assetId], updatedAt}.
+  var dbNs = null, assetsNs = null, canWrite = true, mode = 'local', shared = {}, chain = {}, timers = {};
+  function getText(key) { var d = shared[key]; if (mode === 'shared' && d && typeof d.text === 'string') return d.text; return store.notes[key] || ''; }
+  function getPhotos(key) { var d = shared[key]; return mode === 'shared' && d && Array.isArray(d.photos) ? d.photos : []; }
+  function noteBlock(key, ph, small) {
+    return '<div class="nb" data-key="' + key + '"><textarea class="note' + (small ? ' small' : '') + '" data-key="' + key + '" placeholder="' + ph + '"></textarea>' +
+      '<div class="photos"></div><div class="row"><label class="btn addpic" hidden>' + t('addPic') + '<input type="file" accept="image/*" multiple hidden data-key="' + key + '"></label><span class="fine msg" style="margin:0"></span></div></div>';
+  }
+  function blockMsg(key, text) {
+    var el = document.querySelector('.nb[data-key="' + key + '"] .msg'); if (el) el.textContent = text;
+  }
+  function errText(e) {
+    var c = e && e.code;
+    if (c === 'quota_or_state' || c === 'quota_exceeded') return t('errFull');
+    if (c === 'unsupported_type') return t('errType');
+    if (c === 'too_large') return t('errBig');
+    return t('errGeneric');
+  }
+  function refreshBlock(el) {
+    var key = el.getAttribute('data-key'), ta = el.querySelector('textarea');
+    if (document.activeElement !== ta) ta.value = getText(key);
+    ta.readOnly = mode === 'shared' && !canWrite;
+    el.querySelector('.addpic').hidden = !(mode === 'shared' && canWrite && assetsNs);
+    el.querySelector('.photos').innerHTML = getPhotos(key).map(function (id) {
+      return '<div class="ph"><img src="/_blob/' + id + '" alt="" loading="lazy" data-open="' + id + '">' +
+        (canWrite ? '<button class="x" data-del="' + id + '" aria-label="' + t('remove') + '">×</button>' : '') + '</div>';
+    }).join('');
+  }
+  function hydrate() { document.querySelectorAll('.nb').forEach(refreshBlock); }
+  function write(key, patchFn) {
+    chain[key] = (chain[key] || Promise.resolve()).then(function () {
+      var cur = shared[key] || {};
+      var next = { text: getText(key), photos: getPhotos(key).slice(), updatedAt: Date.now() };
+      var patch = patchFn(next);
+      Object.keys(patch).forEach(function (k) { next[k] = patch[k]; });
+      shared[key] = next;
+      return dbNs.doc('notes/' + key).set(next);
+    }).then(function () { blockMsg(key, t('savedShared')); }, function (e) { blockMsg(key, errText(e)); });
+    return chain[key];
+  }
+  function saveText(key, v) {
+    if (mode === 'shared') { blockMsg(key, t('saving')); write(key, function () { return { text: v }; }); }
+    else { store.notes[key] = v; save(); }
+  }
+  function shrink(file) {
+    return new Promise(function (resolve) {
+      var url = URL.createObjectURL(file), img = new Image();
+      img.onload = function () {
+        var m = 1600, r = Math.min(1, m / Math.max(img.naturalWidth, img.naturalHeight)), c = document.createElement('canvas');
+        c.width = Math.round(img.naturalWidth * r); c.height = Math.round(img.naturalHeight * r);
+        c.getContext('2d').drawImage(img, 0, 0, c.width, c.height);
+        c.toBlob(function (b) { URL.revokeObjectURL(url); resolve(b || file); }, 'image/jpeg', 0.85);
+      };
+      img.onerror = function () { URL.revokeObjectURL(url); resolve(file); };
+      img.src = url;
+    });
+  }
+  async function addPictures(key, files) {
+    for (var i = 0; i < files.length; i++) {
+      blockMsg(key, t('uploading') + ' ' + (i + 1) + '/' + files.length);
+      try {
+        var blob = await shrink(files[i]);
+        var res = await assetsNs.upload(blob, blob.type ? undefined : { type: 'image/jpeg' });
+        await write(key, function (cur) { return { photos: cur.photos.concat([res.id]) }; });
+      } catch (e) { blockMsg(key, errText(e)); return; }
+    }
+  }
+  var lightbox = document.createElement('div');
+  lightbox.className = 'lightbox'; lightbox.hidden = true;
+  lightbox.innerHTML = '<button class="lbx" aria-label="Close">×</button><img alt="">';
+  document.body.appendChild(lightbox);
+  function closeLightbox() { lightbox.hidden = true; lightbox.querySelector('img').removeAttribute('src'); }
+  lightbox.addEventListener('click', closeLightbox);
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !lightbox.hidden) closeLightbox(); });
+  var armed = null;
+  $('panel').addEventListener('click', function (e) {
+    var op = e.target.closest('[data-open]');
+    if (op) { lightbox.querySelector('img').src = '/_blob/' + op.getAttribute('data-open'); lightbox.hidden = false; return; }
+    var del = e.target.closest('[data-del]');
+    if (!del) return;
+    var id = del.getAttribute('data-del'), key = del.closest('.nb').getAttribute('data-key');
+    if (armed !== id) { armed = id; del.textContent = '?'; del.title = t('confirmRemove'); blockMsg(key, t('confirmRemove')); setTimeout(function () { if (armed === id) { armed = null; del.textContent = '×'; } }, 3000); return; }
+    armed = null;
+    write(key, function (cur) { return { photos: cur.photos.filter(function (x) { return x !== id; }) }; }).then(function () {
+      if (assetsNs) assetsNs.delete(id).catch(function () {});
+    });
+  });
+  $('panel').addEventListener('change', function (e) {
+    if (e.target.matches('input[type="file"]')) { var f = Array.prototype.slice.call(e.target.files); e.target.value = ''; if (f.length) addPictures(e.target.getAttribute('data-key'), f); }
+  });
+  async function initShared() {
+    try {
+      dbNs = await claude.use('db'); assetsNs = await claude.use('assets');
+      var u = await claude.use('user');
+      if (u && u.can) { var cw = u.can('data.write'); if (cw === false) canWrite = false; }
+    } catch (e) { dbNs = null; }
+    if (!dbNs) { hydrate(); return; }
+    dbNs.collection('notes').onSnapshot(function (snap) {
+      mode = 'shared'; shared = {};
+      snap.docs.forEach(function (d) { shared[d.id] = d.data(); });
+      hydrate();
+      var m = document.getElementById('msg'); if (m) m.textContent = t('savedShared');
+    }, function () { mode = 'local'; hydrate(); });
+  }
+
   function legName(n) { return stopName(stopOf(n)); }
   function gettingHere(s) {
     var leg = activeLegs().filter(function (x) { return x.b === s.n; })[0];
@@ -474,7 +591,8 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
       '<span>' + t('line') + ': ' + leg.km + ' ' + t('km') + '</span>' +
       '<span>' + t('by') + ': ' + L(d.mode) + '. ' + L(d.time) + '</span>' +
       '<span><span class="pill ' + d.conf + '">' + L(CONF[d.conf]) + '</span></span>' +
-      '<span class="fine" style="margin:0">' + L(d.note) + '</span></div></div>';
+      '<span class="fine" style="margin:0">' + L(d.note) + '</span></div>' +
+      '<p class="label" style="margin-top:10px">' + t('legNotes') + '</p>' + noteBlock('leg-' + leg.a + '-' + leg.b, t('legPh'), true) + '</div>';
     return h;
   }
   function renderTravel() {
@@ -496,14 +614,17 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
       '<div class="sec"><p class="label">' + t('todo') + '</p><ul class="todo">' + s.todo.map(function (q, i) {
         return '<li><label><input type="checkbox" data-i="' + i + '"' + (done[i] ? ' checked' : '') + '><span>' + L(q) + '</span></label></li>';
       }).join('') + '</ul></div>' +
-      '<div class="sec"><p class="label">' + t('notes') + '</p><textarea id="note" placeholder="' + t('notesPh') + '"></textarea>' +
-      '<div class="row"><button class="btn" id="copy">' + t('copy') + '</button><span class="fine" style="margin:0" id="msg">' + t('saved') + '</span></div>' +
+      '<div class="sec"><p class="label">' + t('notes') + '</p>' + noteBlock('stop-' + s.n, t('notesPh'), false) +
+      '<div class="row"><button class="btn" id="copy">' + t('copy') + '</button><span class="fine" style="margin:0" id="msg">' + (mode === 'shared' ? t('savedShared') : t('saved')) + '</span></div>' +
       '<textarea id="export" readonly></textarea></div>';
     $('panel').innerHTML = html;
-    $('note').value = store.notes[s.n] || '';
+    hydrate();
   }
   $('panel').addEventListener('input', function (e) {
-    if (e.target.id === 'note') { store.notes[sel] = e.target.value; save(); }
+    if (e.target.classList.contains('note')) {
+      var key = e.target.getAttribute('data-key'), v = e.target.value;
+      clearTimeout(timers[key]); timers[key] = setTimeout(function () { saveText(key, v); }, 700);
+    }
   });
   $('panel').addEventListener('change', function (e) {
     if (e.target.matches('.todo input')) { var d = store.done[sel] || (store.done[sel] = {}); d[e.target.dataset.i] = e.target.checked; save(); }
@@ -512,7 +633,7 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
     if (e.target.id !== 'copy') return;
     var text = STOPS.map(function (s) {
       var d = store.done[s.n] || {};
-      return s.n + '. ' + s.en + ' ' + s.zh + ' (' + dayText(s) + ')\n' + s.todo.map(function (q, i) { return (d[i] ? '[x] ' : '[ ] ') + L(q); }).join('\n') + '\n' + (store.notes[s.n] || '');
+      return s.n + '. ' + s.en + ' ' + s.zh + ' (' + dayText(s) + ')\n' + s.todo.map(function (q, i) { return (d[i] ? '[x] ' : '[ ] ') + L(q); }).join('\n') + '\n' + getText('stop-' + s.n);
     }).join('\n\n');
     var msg = $('msg'), ex = $('export');
     function fallback() { ex.style.display = 'block'; ex.value = text; ex.focus(); ex.select(); }
@@ -575,5 +696,6 @@ td.n { font-variant-numeric: tabular-nums; white-space: nowrap; }
   window.addEventListener('pointerup', function () { drag = null; });
 
   applyStatic();
+  initShared();
 })();
 </script>
